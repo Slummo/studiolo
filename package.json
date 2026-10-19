@@ -1,8 +1,8 @@
 {
-  "name": "daily-desk",
-  "version": "1.1.0",
+  "name": "studiolo",
+  "version": "1.0.0",
   "private": true,
-  "description": "Obsidian plugin: daily page with categorized kanban, timer, left-behind tasks and notes from previous days.",
+  "description": "Obsidian plugin: a daily page with a pomodoro timer, a kanban board and notes.",
   "main": "main.js",
   "scripts": {
     "test": "node test/run.js",

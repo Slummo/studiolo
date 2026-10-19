@@ -2,7 +2,7 @@
 // Builds a throwaway vault for manual testing: the plugin installed and enabled, plus pages for
 // earlier days with unfinished tasks and pending notes. Run it again to copy a fresh build in.
 //
-//   node test/make-vault.js ~/daily-desk-test-vault
+//   node test/make-vault.js ~/studiolo-test-vault
 
 const fs = require('fs');
 const path = require('path');
@@ -14,7 +14,7 @@ if (!vault) {
   process.exit(1);
 }
 const root = path.join(__dirname, '..');
-const pluginDir = path.join(vault, '.obsidian', 'plugins', 'daily-desk');
+const pluginDir = path.join(vault, '.obsidian', 'plugins', 'studiolo');
 fs.mkdirSync(pluginDir, { recursive: true });
 for (const f of ['main.js', 'manifest.json', 'styles.css']) {
   fs.copyFileSync(path.join(root, f), path.join(pluginDir, f));
@@ -23,7 +23,7 @@ for (const f of ['main.js', 'manifest.json', 'styles.css']) {
 fs.writeFileSync(path.join(pluginDir, '.hotreload'), '');
 
 const community = path.join(vault, '.obsidian', 'community-plugins.json');
-if (!fs.existsSync(community)) fs.writeFileSync(community, JSON.stringify(['daily-desk']));
+if (!fs.existsSync(community)) fs.writeFileSync(community, JSON.stringify(['studiolo']));
 
 // Seed earlier days only; today's page is left for the plugin to create.
 const { buildDailyNote, replaceBlockBody, addNoteSection, insertIntoSection, BLOCK } = loadHelpers();
@@ -41,17 +41,17 @@ const seed = (daysAgo, board, nextDays) => {
 const d8 = moment().subtract(8, 'days').format('YYYY-MM-DD');
 seed(8, '## Study\n- [ ] Read chapter 3\n- [x] Watch lecture 2', '- Buy a new notebook');
 seed(3, '## Work\n- [/] Write the quarterly report\n- [ ] Reply to [[Project X]] email\n- [x] Standup', '- Ask about the deadline\n- [x] Already handled');
-// A page in the 1.0 layout (a heading per section), to check old pages still work.
+// A page laid out with headings instead of callouts, as a hand-made template might do.
 const old = moment().startOf('day').subtract(5, 'days');
 const oldFile = path.join(journal, `${old.format('YYYY-MM-DD')}.md`);
 if (!fs.existsSync(oldFile)) {
   fs.writeFileSync(oldFile, [
-    '---', `daily-desk: ${old.format('YYYY-MM-DD')}`, '---', `# ${old.format('dddd D MMMM YYYY')}`, '',
-    '```daily-desk-nav', '```', '', '```daily-desk-timer', '```', '',
-    '## Left behind', '```daily-desk-carryover', '```', '',
-    '## Tasks', '```daily-desk-board', '## Personal', '- [ ] Renew the passport', '```', '',
-    '## From previous days', '```daily-desk-previous', '```', '',
-    '## Notes for today', '- ', '', '## Notes for next days', '- Old-style note from the 1.0 layout', '',
+    '---', `studiolo: ${old.format('YYYY-MM-DD')}`, '---', `# ${old.format('dddd D MMMM YYYY')}`, '',
+    '```studiolo-nav', '```', '', '```studiolo-timer', '```', '',
+    '## Left behind', '```studiolo-carryover', '```', '',
+    '## Tasks', '```studiolo-board', '## Personal', '- [ ] Renew the passport', '```', '',
+    '## From previous days', '```studiolo-previous', '```', '',
+    '## Notes for today', '- ', '', '## Notes for next days', '- Note under a plain heading', '',
   ].join('\n'));
 }
 seed(1, `## Work\n- [ ] Fix login bug\n\n## Personal\n- [ ] Call the dentist (since ${d8})\nnote to self: this line must survive edits`, '- Check the gym schedule');

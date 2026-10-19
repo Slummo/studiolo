@@ -94,13 +94,14 @@ const ctxFor = (path) => ({ sourcePath: path, addChild: () => {} });
 const tick = () => new Promise((r) => setTimeout(r, 5));
 const fire = (el, type, props = {}) => { const e = new window.Event(type, { bubbles: true, cancelable: true }); Object.assign(e, props); el.dispatchEvent(e); return e; };
 
-// A page as Daily Desk 1.0 created it. Pages like this must keep working.
-const OLD_NOTE = [
-  '---', 'daily-desk: 2026-10-18', '---', '# Sunday 18 October 2026', '',
-  '```daily-desk-nav', '```', '', '```daily-desk-timer', '```', '',
-  '## ⚠️ Left behind', '```daily-desk-carryover', '```', '',
-  '## 📋 Tasks', '```daily-desk-board', '```', '',
-  '## 📨 From previous days', '```daily-desk-previous', '```', '',
+// A page that uses headings instead of callouts, as a custom template or a hand-made page might.
+// Pages like this must keep working.
+const HEADING_NOTE = [
+  '---', 'studiolo: 2026-10-18', '---', '# Sunday 18 October 2026', '',
+  '```studiolo-nav', '```', '', '```studiolo-timer', '```', '',
+  '## ⚠️ Left behind', '```studiolo-carryover', '```', '',
+  '## 📋 Tasks', '```studiolo-board', '```', '',
+  '## 📨 From previous days', '```studiolo-previous', '```', '',
   '## 💭 Brainstorm', '- ', '', '## 📝 Notes for today', '- ', '', '## 🏆 Results of today', '- ', '',
   '## 💡 What I learned', '- ', '', '## ➡️ Notes for next days', '- ', '',
 ].join('\n');
@@ -137,7 +138,7 @@ async function test(name, fn) {
   await test('block replace keeps the rest of the note', () => {
     const note = T.buildDailyNote(moment('2026-10-19'));
     const out = T.replaceBlockBody(note, T.BLOCK.board, '## Work\n- [ ] hi');
-    assert.ok(out.includes('```daily-desk-board\n## Work\n- [ ] hi\n```'));
+    assert.ok(out.includes('```studiolo-board\n## Work\n- [ ] hi\n```'));
     assert.strictEqual(T.getBlockBody(out, T.BLOCK.board), '## Work\n- [ ] hi');
     assert.strictEqual(out.replace('## Work\n- [ ] hi\n', ''), note);
   });
@@ -148,8 +149,8 @@ async function test(name, fn) {
     assert.deepStrictEqual(T.pendingNotes(note), []);
   });
 
-  await test('pending notes and resolving, in a 1.0 page (headings)', () => {
-    const note = OLD_NOTE.replace('## ➡️ Notes for next days\n- ', '## ➡️ Notes for next days\n- call Marco\n- [ ] buy milk\n- [x] already seen\n  - nested ignored');
+  await test('pending notes and resolving, under headings', () => {
+    const note = HEADING_NOTE.replace('## ➡️ Notes for next days\n- ', '## ➡️ Notes for next days\n- call Marco\n- [ ] buy milk\n- [x] already seen\n  - nested ignored');
     const items = T.pendingNotes(note);
     assert.deepStrictEqual(items.map((i) => i.text), ['call Marco', 'buy milk']);
     assert.strictEqual(T.resolveLine('- call Marco'), '- [x] call Marco');
@@ -157,15 +158,15 @@ async function test(name, fn) {
   });
 
   await test('pending notes and resolving, in a callout', () => {
-    const note = '> [!dd-next] Notes for next days\n> - call Marco\n> - [x] seen\n>   - nested ignored\n\nafter';
+    const note = '> [!studiolo-next] Notes for next days\n> - call Marco\n> - [x] seen\n>   - nested ignored\n\nafter';
     const items = T.pendingNotes(note);
     assert.deepStrictEqual(items.map((i) => [i.text, i.line]), [['call Marco', 1]]);
     assert.strictEqual(T.resolveLine('> - call Marco'), '> - [x] call Marco');
     assert.strictEqual(T.resolveLine('>- [ ] x'), '>- [x] x');
   });
 
-  await test('insert into section: 1.0 heading placeholder, then appends', () => {
-    let note = T.insertIntoSection(OLD_NOTE, /notes for today/i, '- one');
+  await test('insert into section: heading placeholder, then appends', () => {
+    let note = T.insertIntoSection(HEADING_NOTE, /notes for today/i, '- one');
     assert.ok(note.includes('## 📝 Notes for today\n- one\n\n## 🏆'));
     note = T.insertIntoSection(note, /notes for today/i, '- two');
     assert.ok(note.includes('## 📝 Notes for today\n- one\n- two\n\n## 🏆'));
@@ -173,16 +174,16 @@ async function test(name, fn) {
   });
 
   await test('insert into section: callout placeholder, then appends inside the quote', () => {
-    let note = 'a\n\n> [!dd-note] Notes for today\n> \n\nb';
+    let note = 'a\n\n> [!studiolo-note] Notes for today\n> \n\nb';
     note = T.insertIntoSection(note, /notes for today/i, '- one');
-    assert.strictEqual(note, 'a\n\n> [!dd-note] Notes for today\n> - one\n\nb');
+    assert.strictEqual(note, 'a\n\n> [!studiolo-note] Notes for today\n> - one\n\nb');
     note = T.insertIntoSection(note, /notes for today/i, '- two');
-    assert.strictEqual(note, 'a\n\n> [!dd-note] Notes for today\n> - one\n> - two\n\nb');
+    assert.strictEqual(note, 'a\n\n> [!studiolo-note] Notes for today\n> - one\n> - two\n\nb');
   });
 
   await test('new pages: catch up, plan, notes; styled sections; notes added on demand', () => {
     const note = T.buildDailyNote(moment('2026-10-19'));
-    assert.ok(note.startsWith('---\ndaily-desk: 2026-10-19\ncssclasses:\n  - dd-page\n---\n'));
+    assert.ok(note.startsWith('---\nstudiolo: 2026-10-19\ncssclasses:\n  - studiolo\n---\n'));
     assert.ok(!note.includes('## Catch up'), 'the catch up block draws its own title');
     const order = [BLOCK_FENCE('timer'), BLOCK_FENCE('catchup'), '## Plan', BLOCK_FENCE('board'), '## Notes', BLOCK_FENCE('notes')].map((s) => note.indexOf(s));
     assert.ok(order.every((x, i) => x >= 0 && (i === 0 || x > order[i - 1])), String(order));
@@ -196,8 +197,8 @@ async function test(name, fn) {
     const titles = note.split('\n').filter((l) => l.startsWith('> [!')).map((l) => l.replace(/^> \[!\S+\] /, ''));
     assert.deepStrictEqual(titles, ['Brainstorm', 'Notes for today', 'End of day', 'Reading list', 'Notes for next days']);
     // brainstorm sits between "## Plan" and the board, everything else after the notes block
-    assert.ok(note.includes('## Plan\n\n> [!dd-brainstorm] Brainstorm\n> \n\n```daily-desk-board'));
-    assert.ok(note.indexOf('[!dd-note] Notes for today') > note.indexOf('```daily-desk-notes'));
+    assert.ok(note.includes('## Plan\n\n> [!studiolo-brainstorm] Brainstorm\n> \n\n```studiolo-board'));
+    assert.ok(note.indexOf('[!studiolo-note] Notes for today') > note.indexOf('```studiolo-notes'));
     // blank line between every callout, so they never merge; the final newline is kept
     assert.ok(!/^>.*\n(?!>)\S/m.test(note));
     assert.ok(note.endsWith('> \n'));
@@ -206,10 +207,10 @@ async function test(name, fn) {
     assert.deepStrictEqual(T.noteSections(note).map((s) => s.kind), ['brainstorm', 'today', 'evening', 'other', 'next']);
   });
 
-  await test('1.0 pages: their heading sections count, and new callouts fit around them', () => {
-    assert.deepStrictEqual(T.noteSections(OLD_NOTE).map((s) => s.kind), ['brainstorm', 'today', 'evening', 'evening', 'next']);
-    const r = T.addNoteSection(OLD_NOTE, 'other', 'Ideas');
-    assert.ok(r.content.includes('- \n\n> [!dd-note] Ideas\n> \n\n## ➡️ Notes for next days'));
+  await test('heading pages: their sections count, and new callouts fit around them', () => {
+    assert.deepStrictEqual(T.noteSections(HEADING_NOTE).map((s) => s.kind), ['brainstorm', 'today', 'evening', 'evening', 'next']);
+    const r = T.addNoteSection(HEADING_NOTE, 'other', 'Ideas');
+    assert.ok(r.content.includes('- \n\n> [!studiolo-note] Ideas\n> \n\n## ➡️ Notes for next days'));
     assert.strictEqual(r.content.split('\n')[r.line], '> ');
   });
 
@@ -273,7 +274,7 @@ async function test(name, fn) {
 
     await p.addCategory(todayPath, 'Work');
     let el = render();
-    const input = el.querySelector('input.dd-add');
+    const input = el.querySelector('input.sl-add');
     for (const t of ['Fix login bug', 'Write report', 'Standup']) {
       input.value = t;
       fire(input, 'keydown', { key: 'Enter' });
@@ -282,18 +283,18 @@ async function test(name, fn) {
     assert.strictEqual(body(), '## Work\n- [ ] Fix login bug\n- [ ] Write report\n- [ ] Standup');
 
     el = render();
-    const cards = el.querySelectorAll('.dd-lane-todo .dd-card');
+    const cards = el.querySelectorAll('.sl-lane-todo .sl-card');
     assert.strictEqual(cards.length, 3);
     // drag "Write report" into Doing
     fire(cards[1], 'dragstart');
-    fire(el.querySelector('.dd-lane-doing .dd-lane-list'), 'drop');
+    fire(el.querySelector('.sl-lane-doing .sl-lane-list'), 'drop');
     await tick();
     assert.strictEqual(body(), '## Work\n- [ ] Fix login bug\n- [ ] Standup\n- [/] Write report');
 
     el = render();
     // check off Standup via checkbox
-    const standup = [...el.querySelectorAll('.dd-card')].find((c) => c.textContent.includes('Standup'));
-    const cb = standup.querySelector('input.dd-check');
+    const standup = [...el.querySelectorAll('.sl-card')].find((c) => c.textContent.includes('Standup'));
+    const cb = standup.querySelector('input.sl-check');
     cb.checked = true;
     fire(cb, 'change');
     await tick();
@@ -301,10 +302,10 @@ async function test(name, fn) {
 
     el = render();
     // drag Standup (done) before "Fix login bug" in To do
-    const st = [...el.querySelectorAll('.dd-card')].find((c) => c.textContent.includes('Standup'));
-    const fix = [...el.querySelectorAll('.dd-card')].find((c) => c.textContent.includes('Fix login'));
+    const st = [...el.querySelectorAll('.sl-card')].find((c) => c.textContent.includes('Standup'));
+    const fix = [...el.querySelectorAll('.sl-card')].find((c) => c.textContent.includes('Fix login'));
     fire(st, 'dragstart');
-    fire(fix.querySelector('.dd-card-text p'), 'drop');
+    fire(fix.querySelector('.sl-card-text p'), 'drop');
     await tick();
     assert.strictEqual(body(), '## Work\n- [ ] Standup\n- [ ] Fix login bug\n- [/] Write report');
   });
@@ -316,20 +317,20 @@ async function test(name, fn) {
     await p.addCard(todayPath, 'Work', 'Read paper', null);
     let el = document.createElement('div');
     p.renderBoard(body(), el, ctxFor(todayPath));
-    fire(el.querySelector('.dd-card-more'), 'click');
+    fire(el.querySelector('.sl-card-more'), 'click');
     lastMenu.click('Change category...');
     lastMenu.click('Study');
     await tick();
     assert.strictEqual(body(), '## Work\n\n## Study\n- [ ] Read paper');
     el = document.createElement('div');
     p.renderBoard(body(), el, ctxFor(todayPath));
-    fire(el.querySelector('.dd-card-more'), 'click');
+    fire(el.querySelector('.sl-card-more'), 'click');
     lastMenu.click('Archive');
     await tick();
     assert.ok(body().includes('- [-] Read paper'));
     el = document.createElement('div');
     p.renderBoard(body(), el, ctxFor(todayPath));
-    assert.strictEqual(el.querySelectorAll('.dd-card').length, 0);
+    assert.strictEqual(el.querySelectorAll('.sl-card').length, 0);
     assert.ok(el.textContent.includes('1 archived'));
   });
 
@@ -362,11 +363,11 @@ async function test(name, fn) {
     p.renderLive(el, ctxFor(todayPath), 'carryover');
     await tick(); await tick();
     // Study group first (age 5), Work second
-    const groups = [...el.querySelectorAll('.dd-group-head .dd-cat-name')].map((n) => n.textContent);
+    const groups = [...el.querySelectorAll('.sl-group-head .sl-cat-name')].map((n) => n.textContent);
     assert.deepStrictEqual(groups, ['Study', 'Work']);
-    assert.ok(el.querySelector('.dd-urgency-3'), 'age 5 badge is red');
+    assert.ok(el.querySelector('.sl-urgency-3'), 'age 5 badge is red');
 
-    const rowOf = (txt) => [...el.querySelectorAll('.dd-item')].find((r) => r.textContent.includes(txt));
+    const rowOf = (txt) => [...el.querySelectorAll('.sl-item')].find((r) => r.textContent.includes(txt));
     fire([...rowOf('Old chapter').querySelectorAll('button')].find((b) => b.textContent === 'Move to today'), 'click');
     await tick(); await tick(); await tick();
     fire([...rowOf('Drop me').querySelectorAll('button')].find((b) => b.textContent === 'Archive'), 'click');
@@ -387,7 +388,7 @@ async function test(name, fn) {
     // today's board shows the age badge for the carried card
     const bel = document.createElement('div');
     p.renderBoard(todayBody, bel, ctxFor(todayPath));
-    assert.strictEqual(bel.querySelector('.dd-age').textContent, '5d');
+    assert.strictEqual(bel.querySelector('.sl-age').textContent, '5d');
 
     // "doing" stays doing when carried, and a second carry keeps the original date
     await p.carryTo(todayPath, left[0]);
@@ -412,12 +413,12 @@ async function test(name, fn) {
     document.body.appendChild(el);
     p.renderLive(el, ctxFor(todayPath), 'previous');
     await tick(); await tick();
-    const rowOf = (txt) => [...el.querySelectorAll('.dd-item')].find((r) => r.textContent.includes(txt));
+    const rowOf = (txt) => [...el.querySelectorAll('.sl-item')].find((r) => r.textContent.includes(txt));
 
     fire([...rowOf('remember the book').querySelectorAll('button')].find((b) => b.textContent === 'Add to notes'), 'click');
     await tick(); await tick(); await tick();
     // today's page had no "Notes for today" yet: it is created in place
-    assert.ok(app.vault.files.get(todayPath).includes('```daily-desk-notes\n```\n\n> [!dd-note] Notes for today\n> - remember the book\n'));
+    assert.ok(app.vault.files.get(todayPath).includes('```studiolo-notes\n```\n\n> [!studiolo-note] Notes for today\n> - remember the book\n'));
     assert.ok(app.vault.files.get(p3).includes('- [x] remember the book'));
 
     fire([...rowOf('review PR').querySelectorAll('button')].find((b) => b.textContent === 'Make task'), 'click');
@@ -443,11 +444,11 @@ async function test(name, fn) {
     const tel = document.createElement('div');
     document.body.appendChild(tel);
     p.renderTimer(tel, ctxFor(todayPath));
-    assert.ok(tel.querySelector('.dd-timer-time').textContent === '25:00');
-    fire([...tel.querySelectorAll('.dd-tab')][1], 'click');
-    assert.strictEqual(tel.querySelector('.dd-timer-time').textContent, '10:00');
-    assert.ok(!tel.querySelector('.dd-timer-setter').classList.contains('dd-hidden'));
-    assert.ok(tel.querySelector('.dd-progress').classList.contains('dd-hidden') === false);
+    assert.ok(tel.querySelector('.sl-timer-time').textContent === '25:00');
+    fire([...tel.querySelectorAll('.sl-tab')][1], 'click');
+    assert.strictEqual(tel.querySelector('.sl-timer-time').textContent, '10:00');
+    assert.ok(!tel.querySelector('.sl-timer-setter').classList.contains('sl-hidden'));
+    assert.ok(tel.querySelector('.sl-progress').classList.contains('sl-hidden') === false);
   });
 
   await test('pomodoro cycle: focus, short x3, long, today count', async () => {
@@ -495,7 +496,7 @@ async function test(name, fn) {
     assert.strictEqual(body(), '## Work\n- [ ] A\n- [ ] B\nnote to self');
     const el = document.createElement('div');
     p.renderBoard(body(), el, ctxFor(todayPath));
-    fire(el.querySelector('.dd-cat-head [aria-label="Category actions"]'), 'click');
+    fire(el.querySelector('.sl-cat-head [aria-label="Category actions"]'), 'click');
     assert.ok(!lastMenu.items.some((i) => i.title === 'Remove category'));
   });
 
@@ -507,7 +508,7 @@ async function test(name, fn) {
     const el = document.createElement('div');
     p.renderBoard(body(), el, ctxFor(todayPath));
     let modal = null;
-    fire(el.querySelector('.dd-cat-head [aria-label="Category actions"]'), 'click');
+    fire(el.querySelector('.sl-cat-head [aria-label="Category actions"]'), 'click');
     const item = lastMenu.items.find((i) => i.title === 'Rename...');
     const OrigModal = require('obsidian').Modal;
     const open = OrigModal.prototype.open;
@@ -529,11 +530,11 @@ async function test(name, fn) {
     const el = document.createElement('div');
     document.body.appendChild(el);
     p.renderBoard('## Work\n- [-] old', el, ctxFor(todayPath));
-    assert.strictEqual(el.querySelectorAll('input.dd-add').length, 0);
+    assert.strictEqual(el.querySelectorAll('input.sl-add').length, 0);
     fire([...el.querySelectorAll('button')].find((b) => b.textContent === 'Work'), 'click');
     await tick(); await tick();
     assert.strictEqual(app.vault.files.get(todayPath), before, 'file untouched');
-    assert.strictEqual(el.querySelectorAll('input.dd-add').length, 1, 'redrawn with an input');
+    assert.strictEqual(el.querySelectorAll('input.sl-add').length, 1, 'redrawn with an input');
   });
 
   await test('a moved pending note is ticked only if its text is unique', async () => {
@@ -541,7 +542,7 @@ async function test(name, fn) {
     const d1 = today.clone().subtract(1, 'days');
     const p1 = `Journal/${d1.format('YYYY-MM-DD')}.md`;
     await p.ensureNote(d1);
-    await app.vault.process(app.vault.getAbstractFileByPath(p1), () => OLD_NOTE.replace('## ➡️ Notes for next days\n- ', '## ➡️ Notes for next days\n- call Marco'));
+    await app.vault.process(app.vault.getAbstractFileByPath(p1), () => HEADING_NOTE.replace('## ➡️ Notes for next days\n- ', '## ➡️ Notes for next days\n- call Marco'));
     const [it] = await p.collectPending(today);
     // a line is inserted above, and the same text also appears in "Notes for today"
     await app.vault.process(app.vault.getAbstractFileByPath(p1), (c) => c.replace('## 📝 Notes for today\n- ', '## 📝 Notes for today\n- call Marco\n- other'));
@@ -572,7 +573,7 @@ async function test(name, fn) {
     document.body.appendChild(el);
     p.renderNav(el, ctxFor(`Journal/${d1.format('YYYY-MM-DD')}.md`));
     assert.ok(el.textContent.includes('No later days'));
-    assert.ok(el.querySelector('.dd-banner'), 'not-today banner');
+    assert.ok(el.querySelector('.sl-banner'), 'not-today banner');
     await p.ensureNote(today);
     p.refreshLive(false);
     assert.ok(el.textContent.includes(today.format('ddd D MMM')));
@@ -621,7 +622,7 @@ async function test(name, fn) {
     fire([...el.querySelectorAll('button')].find((b) => b.textContent === 'End of day'), 'click');
     await tick(); await new Promise((r) => setTimeout(r, 60));
     const c = app.vault.files.get(todayPath);
-    assert.ok(c.includes('```daily-desk-notes\n```\n\n> [!dd-evening] End of day\n> \n'));
+    assert.ok(c.includes('```studiolo-notes\n```\n\n> [!studiolo-evening] End of day\n> \n'));
     assert.strictEqual(editorLines()[cursor[0].line], '> ', 'cursor on the empty body line');
     p.refreshLive(false);
     await tick();
@@ -635,15 +636,15 @@ async function test(name, fn) {
     document.body.appendChild(el);
     p.renderBoard('', el, ctxFor(todayPath));
     await tick();
-    const slot = el.querySelector('.dd-plan-bar button');
+    const slot = el.querySelector('.sl-plan-bar button');
     assert.strictEqual(slot.textContent, 'Brainstorm first');
-    assert.ok(el.firstChild.classList.contains('dd-plan-bar'), 'slot comes before the board');
+    assert.ok(el.firstChild.classList.contains('sl-plan-bar'), 'slot comes before the board');
     fire(slot, 'click');
     await tick();
-    assert.ok(app.vault.files.get(todayPath).includes('## Plan\n\n> [!dd-brainstorm] Brainstorm\n> \n\n```daily-desk-board'));
+    assert.ok(app.vault.files.get(todayPath).includes('## Plan\n\n> [!studiolo-brainstorm] Brainstorm\n> \n\n```studiolo-board'));
     p.refreshLive(false);
     await tick();
-    assert.strictEqual(el.querySelector('.dd-plan-bar').childElementCount, 0, 'slot gone once the brainstorm exists');
+    assert.strictEqual(el.querySelector('.sl-plan-bar').childElementCount, 0, 'slot gone once the brainstorm exists');
   });
 
   await test('catch up: hidden with nothing from earlier days, each list only when it has items', async () => {
@@ -653,18 +654,18 @@ async function test(name, fn) {
     document.body.appendChild(el);
     p.renderCatchup(el, ctxFor(todayPath));
     await tick(); await tick();
-    const section = el.querySelector('.dd-catchup');
-    assert.ok(section.classList.contains('dd-hidden'), 'first day: nothing to catch up on');
+    const section = el.querySelector('.sl-catchup');
+    assert.ok(section.classList.contains('sl-hidden'), 'first day: nothing to catch up on');
     const d1 = today.clone().subtract(1, 'days');
     await p.ensureNote(d1);
     const p1 = `Journal/${d1.format('YYYY-MM-DD')}.md`;
     await app.vault.process(app.vault.getAbstractFileByPath(p1), (c) => T.replaceBlockBody(c, T.BLOCK.board, '## Work\n- [ ] Leftover'));
     p.refreshLive(false);
     await tick(); await tick();
-    assert.ok(!section.classList.contains('dd-hidden'));
-    assert.strictEqual(section.querySelector('.dd-section-title').textContent, 'Catch up');
-    assert.ok(!section.querySelector('.dd-carryover').classList.contains('is-empty'));
-    assert.ok(section.querySelector('.dd-previous').classList.contains('is-empty'), 'no notes: that list is hidden');
+    assert.ok(!section.classList.contains('sl-hidden'));
+    assert.strictEqual(section.querySelector('.sl-section-title').textContent, 'Catch up');
+    assert.ok(!section.querySelector('.sl-carryover').classList.contains('is-empty'));
+    assert.ok(section.querySelector('.sl-previous').classList.contains('is-empty'), 'no notes: that list is hidden');
   });
 
   await test('removing a note: X in the callout title, asks first when it has text, slot comes back', async () => {
@@ -682,14 +683,14 @@ async function test(name, fn) {
       return co;
     };
     const el = document.createElement('div');
-    el.append(callout('dd-note', 'Notes for today'), callout('dd-next', 'Notes for next days'), callout('tip', 'Not ours'));
+    el.append(callout('studiolo-note', 'Notes for today'), callout('studiolo-next', 'Notes for next days'), callout('tip', 'Not ours'));
     p.decorateCallouts(el, ctxFor(todayPath));
     p.decorateCallouts(el, ctxFor(todayPath));
-    assert.strictEqual(el.querySelectorAll('.dd-callout-remove').length, 2, 'one X per Daily Desk callout, added once');
-    assert.ok(el.querySelector('.dd-callout-remove').classList.contains('interactive-child'));
+    assert.strictEqual(el.querySelectorAll('.sl-callout-remove').length, 2, 'one X per Studiolo callout, added once');
+    assert.ok(el.querySelector('.sl-callout-remove').classList.contains('interactive-child'));
 
     // empty section: removed straight away
-    fire(el.querySelectorAll('.dd-callout-remove')[1], 'click');
+    fire(el.querySelectorAll('.sl-callout-remove')[1], 'click');
     await tick();
     assert.ok(!app.vault.files.get(todayPath).includes('Notes for next days'));
 
@@ -698,11 +699,11 @@ async function test(name, fn) {
     const open = Modal.prototype.open;
     let modal = null;
     Modal.prototype.open = function () { modal = this; open.call(this); };
-    fire(el.querySelectorAll('.dd-callout-remove')[0], 'click');
+    fire(el.querySelectorAll('.sl-callout-remove')[0], 'click');
     await tick();
     assert.ok(app.vault.files.get(todayPath).includes('- keep this?'), 'nothing removed before confirming');
     [...modal.contentEl.querySelectorAll('button')].find((b) => b.textContent === 'Cancel').click();
-    fire(el.querySelectorAll('.dd-callout-remove')[0], 'click');
+    fire(el.querySelectorAll('.sl-callout-remove')[0], 'click');
     await tick();
     [...modal.contentEl.querySelectorAll('button')].find((b) => b.textContent === 'Remove').click();
     await tick(); await tick();
@@ -723,7 +724,7 @@ async function test(name, fn) {
     const el = document.createElement('div');
     document.body.appendChild(el);
     p.renderTimer(el, ctxFor(todayPath));
-    const btn = (label) => el.querySelector(`.dd-timer-controls [aria-label="${label}"]`);
+    const btn = (label) => el.querySelector(`.sl-timer-controls [aria-label="${label}"]`);
     assert.strictEqual(btn('Start').textContent, '', 'icon only');
     fire(btn('Start'), 'click');
     assert.ok(btn('Pause'), 'start turns into pause');
@@ -736,9 +737,9 @@ async function test(name, fn) {
     fire(btn('Restart the cycle from the first focus session'), 'click');
     assert.strictEqual(p.timer.s.phase, 'focus');
     assert.strictEqual(p.timer.s.round, 0);
-    assert.strictEqual(el.querySelector('.dd-timer-time').textContent, '25:00');
-    fire([...el.querySelectorAll('.dd-tab')][2], 'click');
-    assert.ok(btn('Restart the cycle from the first focus session').classList.contains('dd-hidden'), 'pomodoro only');
+    assert.strictEqual(el.querySelector('.sl-timer-time').textContent, '25:00');
+    fire([...el.querySelectorAll('.sl-tab')][2], 'click');
+    assert.ok(btn('Restart the cycle from the first focus session').classList.contains('sl-hidden'), 'pomodoro only');
   });
 
   await test('lane colors: theme defaults unless set, and settings changes reach open boards', async () => {
@@ -748,14 +749,14 @@ async function test(name, fn) {
     const el = document.createElement('div');
     document.body.appendChild(el);
     p.renderBoard('## Work\n- [ ] a', el, ctxFor(todayPath));
-    const root = el.querySelector('.dd-board');
-    assert.strictEqual(root.style.getPropertyValue('--dd-doing'), '#ff8800');
-    assert.strictEqual(root.style.getPropertyValue('--dd-todo'), '', 'falls back to the stylesheet');
+    const root = el.querySelector('.sl-board');
+    assert.strictEqual(root.style.getPropertyValue('--sl-doing'), '#ff8800');
+    assert.strictEqual(root.style.getPropertyValue('--sl-todo'), '', 'falls back to the stylesheet');
     p.settings.laneColors.todo = '#123456';
     p.settings.laneColors.doing = '';
     p.applyLaneColors();
-    assert.strictEqual(root.style.getPropertyValue('--dd-todo'), '#123456');
-    assert.strictEqual(root.style.getPropertyValue('--dd-doing'), '');
+    assert.strictEqual(root.style.getPropertyValue('--sl-todo'), '#123456');
+    assert.strictEqual(root.style.getPropertyValue('--sl-doing'), '');
     void app;
   });
 

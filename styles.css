@@ -1,22 +1,22 @@
-/* Daily Desk. Only Obsidian theme variables, so any light or dark theme works.
+/* Studiolo. Only Obsidian theme variables, so any light or dark theme works.
    Task areas (timer, catch up, board) are panels on the secondary background; notes are callouts
    styled as sheets of paper, so the two read differently at a glance. */
 
-.dd-nav,
-.dd-timer,
-.dd-board,
-.dd-live,
-.dd-notes-bar {
+.sl-nav,
+.sl-timer,
+.sl-board,
+.sl-live,
+.sl-notes-bar {
   font-size: var(--font-ui-small);
   line-height: 1.4;
 }
 
-/* Sections. Pages made by 1.1+ carry cssclasses: dd-page, so their "## Plan" and "## Notes"
+/* Sections. Daily pages carry cssclasses: studiolo, so their "## Plan" and "## Notes"
    headings get a dashed rule above and room around them. The Catch up title is drawn by the
    plugin (it hides with its section) and copies the h2 look from the theme's own variables. */
 
-.dd-page .el-h2 > h2,
-.dd-section-title {
+.studiolo .el-h2 > h2,
+.sl-section-title {
   border-top: 1px dashed var(--background-modifier-border-hover);
   padding-top: var(--size-4-5);
   margin-top: var(--size-4-8);
@@ -24,12 +24,12 @@
 
 /* Editor lines can't take margins (CodeMirror measures them), so the line gets the whole gap as
    padding and the rule is drawn inside it. */
-.dd-page .cm-line.HyperMD-header-2 {
+.studiolo .cm-line.HyperMD-header-2 {
   position: relative;
   padding-top: calc(var(--size-4-8) + var(--size-4-5));
 }
 
-.dd-page .cm-line.HyperMD-header-2::before {
+.studiolo .cm-line.HyperMD-header-2::before {
   content: '';
   position: absolute;
   top: var(--size-4-8);
@@ -38,7 +38,7 @@
   border-top: 1px dashed var(--background-modifier-border-hover);
 }
 
-.dd-section-title {
+.sl-section-title {
   font-family: var(--h2-font);
   font-size: var(--h2-size);
   font-weight: var(--h2-weight);
@@ -48,52 +48,52 @@
   margin-bottom: var(--size-4-3);
 }
 
-.dd-catchup.dd-hidden,
-.dd-catchup .dd-live.is-empty {
+.sl-catchup.sl-hidden,
+.sl-catchup .sl-live.is-empty {
   display: none;
 }
 
-.dd-catchup .dd-live + .dd-live:not(.is-empty) {
+.sl-catchup .sl-live + .sl-live:not(.is-empty) {
   margin-top: var(--size-4-4);
 }
 
 /* Breathing room between a section heading and the block under it. */
-.dd-live,
-.dd-board,
-.dd-notes-bar {
+.sl-live,
+.sl-board,
+.sl-notes-bar {
   margin-block: var(--size-4-2);
 }
 
-.dd-muted {
+.sl-muted {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
 }
 
-.dd-spacer {
+.sl-spacer {
   flex: 1 1 auto;
 }
 
-.dd-btn {
+.sl-btn {
   gap: var(--size-4-1);
 }
 
-.dd-btn-icon {
+.sl-btn-icon {
   display: inline-flex;
 }
 
-.dd-btn-icon svg {
+.sl-btn-icon svg {
   width: var(--icon-s);
   height: var(--icon-s);
 }
 
-.dd-btn.dd-small {
+.sl-btn.sl-small {
   padding: 2px 10px;
   height: auto;
   min-height: 26px;
   font-size: var(--font-ui-smaller);
 }
 
-.dd-btn.dd-icon {
+.sl-btn.sl-icon {
   padding: 0 6px;
   height: 26px;
   min-width: 26px;
@@ -102,12 +102,12 @@
   color: var(--text-muted);
 }
 
-.dd-btn.dd-icon:hover {
+.sl-btn.sl-icon:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.dd-btn.dd-chip {
+.sl-btn.sl-chip {
   padding: 2px 10px;
   height: auto;
   min-height: 24px;
@@ -115,35 +115,35 @@
   font-size: var(--font-ui-smaller);
 }
 
-.dd-chip-row {
+.sl-chip-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
 }
 
-.dd-empty {
+.sl-empty {
   padding: 12px 14px;
   border: 1px dashed var(--background-modifier-border);
   border-radius: var(--radius-m);
   color: var(--text-muted);
 }
 
-.dd-empty.dd-ok {
+.sl-empty.sl-ok {
   border-style: solid;
   background: var(--background-secondary);
 }
 
-.dd-dot {
+.sl-dot {
   display: inline-block;
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--dd-cat, var(--interactive-accent));
+  background: var(--sl-cat, var(--interactive-accent));
   flex: 0 0 auto;
 }
 
-.dd-tag {
+.sl-tag {
   display: inline-block;
   margin-right: 6px;
   padding: 0 6px;
@@ -154,30 +154,30 @@
   vertical-align: middle;
 }
 
-.dd-md p {
+.sl-md p {
   margin: 0;
 }
 
-.dd-md ul,
-.dd-md ol {
+.sl-md ul,
+.sl-md ol {
   margin: 0;
   padding-left: 1.2em;
 }
 
 /* Navigation */
 
-.dd-nav {
+.sl-nav {
   margin-bottom: var(--size-4-2);
 }
 
-.dd-nav-row {
+.sl-nav-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.dd-banner {
+.sl-banner {
   margin-top: 8px;
   padding: 8px 12px;
   display: flex;
@@ -191,34 +191,34 @@
 
 /* Timer */
 
-.dd-timer {
-  --dd-accent: var(--color-red);
+.sl-timer {
+  --sl-accent: var(--color-red);
   padding: 12px 14px;
   border-radius: var(--radius-l);
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
 }
 
-.dd-timer[data-phase='short'],
-.dd-timer[data-phase='long'] {
-  --dd-accent: var(--color-green);
+.sl-timer[data-phase='short'],
+.sl-timer[data-phase='long'] {
+  --sl-accent: var(--color-green);
 }
 
-.dd-timer[data-phase='countdown'] {
-  --dd-accent: var(--color-blue);
+.sl-timer[data-phase='countdown'] {
+  --sl-accent: var(--color-blue);
 }
 
-.dd-timer[data-phase='stopwatch'] {
-  --dd-accent: var(--color-purple);
+.sl-timer[data-phase='stopwatch'] {
+  --sl-accent: var(--color-purple);
 }
 
-.dd-tabs {
+.sl-tabs {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-.dd-btn.dd-tab {
+.sl-btn.sl-tab {
   padding: 2px 10px;
   height: auto;
   min-height: 26px;
@@ -229,13 +229,13 @@
   color: var(--text-muted);
 }
 
-.dd-btn.dd-tab.is-active {
+.sl-btn.sl-tab.is-active {
   background: var(--background-primary);
   color: var(--text-normal);
   box-shadow: 0 0 0 1px var(--background-modifier-border);
 }
 
-.dd-timer-main {
+.sl-timer-main {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -244,13 +244,13 @@
   flex-wrap: wrap;
 }
 
-.dd-timer-label {
-  color: var(--dd-accent);
+.sl-timer-label {
+  color: var(--sl-accent);
   font-weight: var(--font-semibold);
   margin-bottom: 2px;
 }
 
-.dd-timer-time {
+.sl-timer-time {
   font-size: 2.6em;
   font-weight: var(--font-bold);
   font-variant-numeric: tabular-nums;
@@ -258,17 +258,17 @@
   line-height: 1;
 }
 
-.dd-timer.is-running .dd-timer-time {
-  color: var(--dd-accent);
+.sl-timer.is-running .sl-timer-time {
+  color: var(--sl-accent);
 }
 
-.dd-timer-controls {
+.sl-timer-controls {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.dd-btn.dd-start {
+.sl-btn.sl-start {
   width: 40px;
   height: 40px;
   padding: 0;
@@ -276,32 +276,32 @@
   justify-content: center;
 }
 
-.dd-btn.dd-start .dd-btn-icon svg {
+.sl-btn.sl-start .sl-btn-icon svg {
   width: var(--icon-m);
   height: var(--icon-m);
 }
 
-.dd-timer-controls .dd-btn.dd-icon {
+.sl-timer-controls .sl-btn.sl-icon {
   width: 32px;
   height: 32px;
   justify-content: center;
 }
 
-.dd-progress {
+.sl-progress {
   height: 5px;
   border-radius: 999px;
   background: var(--background-modifier-border);
   overflow: hidden;
 }
 
-.dd-progress-fill {
+.sl-progress-fill {
   height: 100%;
-  width: var(--dd-progress, 0);
-  background: var(--dd-accent);
+  width: var(--sl-progress, 0);
+  background: var(--sl-accent);
   transition: width 0.4s linear;
 }
 
-.dd-timer-setter {
+.sl-timer-setter {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -309,97 +309,97 @@
   margin-top: 10px;
 }
 
-.dd-timer-setter input.dd-minutes {
+.sl-timer-setter input.sl-minutes {
   width: 70px;
 }
 
-.dd-timer-foot:not(:empty) {
+.sl-timer-foot:not(:empty) {
   margin-top: 8px;
 }
 
 /* Toggled from the timer view instead of setting el.style. */
-.dd-timer .dd-hidden {
+.sl-timer .sl-hidden {
   display: none;
 }
 
-.dd-status {
+.sl-status {
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
 
-/* Board. Lane colors from settings arrive as inline --dd-todo / --dd-doing / --dd-done on
-   .dd-board; these are the theme defaults when nothing is set. */
+/* Board. Lane colors from settings arrive as inline --sl-todo / --sl-doing / --sl-done on
+   .sl-board; these are the theme defaults when nothing is set. */
 
-.dd-board {
-  --dd-todo: var(--color-blue);
-  --dd-doing: var(--color-orange);
-  --dd-done: var(--color-green);
+.sl-board {
+  --sl-todo: var(--color-blue);
+  --sl-doing: var(--color-orange);
+  --sl-done: var(--color-green);
   container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.dd-cat {
-  --dd-cat: var(--interactive-accent);
+.sl-cat {
+  --sl-cat: var(--interactive-accent);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-m);
   padding: 6px 10px 10px;
   background: var(--background-secondary);
 }
 
-.dd-cat-head {
+.sl-cat-head {
   display: flex;
   align-items: center;
   gap: 8px;
   min-height: 28px;
 }
 
-.dd-cat-name {
+.sl-cat-name {
   font-weight: var(--font-semibold);
 }
 
-.dd-cat.is-collapsed .dd-lanes {
+.sl-cat.is-collapsed .sl-lanes {
   display: none;
 }
 
-.dd-lanes {
+.sl-lanes {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 6px;
 }
 
-.dd-lane-todo {
-  --dd-lane: var(--dd-todo);
+.sl-lane-todo {
+  --sl-lane: var(--sl-todo);
 }
 
-.dd-lane-doing {
-  --dd-lane: var(--dd-doing);
+.sl-lane-doing {
+  --sl-lane: var(--sl-doing);
 }
 
-.dd-lane-done {
-  --dd-lane: var(--dd-done);
+.sl-lane-done {
+  --sl-lane: var(--sl-done);
 }
 
-.dd-lane {
+.sl-lane {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-height: 70px;
   padding: 6px;
   border-radius: var(--radius-s);
-  border-top: 3px solid var(--dd-lane);
-  background: color-mix(in srgb, var(--dd-lane) 7%, var(--background-primary));
+  border-top: 3px solid var(--sl-lane);
+  background: color-mix(in srgb, var(--sl-lane) 7%, var(--background-primary));
   outline: 1px solid transparent;
   transition: outline-color 0.12s;
 }
 
-.dd-lane.dd-over {
-  outline-color: var(--dd-lane);
+.sl-lane.sl-over {
+  outline-color: var(--sl-lane);
 }
 
-.dd-lane-head {
+.sl-lane-head {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -408,20 +408,20 @@
   padding: 0 2px;
 }
 
-.dd-lane-count {
+.sl-lane-count {
   color: var(--text-muted);
   font-weight: var(--font-normal);
   font-variant-numeric: tabular-nums;
 }
 
-.dd-lane-list {
+.sl-lane-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex: 1 1 auto;
 }
 
-.dd-card {
+.sl-card {
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -433,58 +433,58 @@
   word-break: break-word;
 }
 
-.dd-card:hover {
+.sl-card:hover {
   border-color: var(--background-modifier-border-hover);
 }
 
-.dd-card.is-dragging {
+.sl-card.is-dragging {
   opacity: 0.4;
 }
 
-.dd-card.dd-drop-before {
-  box-shadow: 0 -3px 0 0 var(--dd-lane);
+.sl-card.sl-drop-before {
+  box-shadow: 0 -3px 0 0 var(--sl-lane);
 }
 
-.dd-card .dd-check {
+.sl-card .sl-check {
   margin: 3px 0 0;
   flex: 0 0 auto;
   cursor: pointer;
 }
 
-.dd-card-text {
+.sl-card-text {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.dd-card-done .dd-card-text {
+.sl-card-done .sl-card-text {
   color: var(--text-muted);
   text-decoration: line-through;
 }
 
-.dd-card-more {
+.sl-card-more {
   opacity: 0;
   transition: opacity 0.1s;
 }
 
-.dd-card:hover .dd-card-more,
-.dd-card-more:focus-visible,
-.is-mobile .dd-card-more {
+.sl-card:hover .sl-card-more,
+.sl-card-more:focus-visible,
+.is-mobile .sl-card-more {
   opacity: 1;
 }
 
-.dd-lane input.dd-add {
+.sl-lane input.sl-add {
   width: 100%;
   font-size: var(--font-ui-smaller);
   background: transparent;
   border: 1px dashed var(--background-modifier-border);
 }
 
-.dd-lane input.dd-add:focus {
+.sl-lane input.sl-add:focus {
   border-style: solid;
   background: var(--background-primary);
 }
 
-.dd-board-foot {
+.sl-board-foot {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -492,7 +492,7 @@
 
 /* Urgency */
 
-.dd-age {
+.sl-age {
   flex: 0 0 auto;
   padding: 0 7px;
   border-radius: 999px;
@@ -502,55 +502,55 @@
   font-variant-numeric: tabular-nums;
 }
 
-.dd-urgency-1 {
+.sl-urgency-1 {
   background: rgba(var(--color-yellow-rgb), 0.2);
   color: var(--color-yellow);
 }
 
-.dd-urgency-2 {
+.sl-urgency-2 {
   background: rgba(var(--color-orange-rgb), 0.2);
   color: var(--color-orange);
 }
 
-.dd-urgency-3 {
+.sl-urgency-3 {
   background: rgba(var(--color-red-rgb), 0.2);
   color: var(--color-red);
 }
 
-.dd-urgency-4 {
+.sl-urgency-4 {
   background: var(--color-red);
   color: var(--text-on-accent);
 }
 
 /* Catch up: left behind, from previous days */
 
-.dd-live {
+.sl-live {
   display: flex;
   flex-direction: column;
   gap: 10px;
   transition: opacity 0.15s;
 }
 
-.dd-live.is-busy {
+.sl-live.is-busy {
   opacity: 0.6;
   pointer-events: none;
 }
 
-.dd-live-head {
+.sl-live-head {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.dd-group {
-  --dd-cat: var(--interactive-accent);
+.sl-group {
+  --sl-cat: var(--interactive-accent);
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.dd-group-head {
+.sl-group-head {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -558,7 +558,7 @@
   padding: 0 2px;
 }
 
-.dd-item {
+.sl-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -567,35 +567,35 @@
   border-radius: var(--radius-s);
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-left: 3px solid var(--dd-cat);
+  border-left: 3px solid var(--sl-cat);
 }
 
-.dd-carryover .dd-urgency-row-3 {
+.sl-carryover .sl-urgency-row-3 {
   border-left-color: var(--color-red);
 }
 
-.dd-carryover .dd-urgency-row-4 {
+.sl-carryover .sl-urgency-row-4 {
   border-left: 5px solid var(--color-red);
   background: rgba(var(--color-red-rgb), 0.07);
 }
 
-.dd-previous .dd-item {
+.sl-previous .sl-item {
   border-left-color: var(--color-blue);
 }
 
-.dd-item-text {
+.sl-item-text {
   flex: 1 1 200px;
   min-width: 0;
   word-break: break-word;
 }
 
-.dd-src {
+.sl-src {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-.dd-actions {
+.sl-actions {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
@@ -604,23 +604,23 @@
 /* Notes bar: one dashed slot per note section the page doesn't have yet. The plan bar holds the
    brainstorm slot, right where the brainstorm will appear. */
 
-.dd-plan-bar:not(:empty) {
+.sl-plan-bar:not(:empty) {
   margin-bottom: var(--size-4-3);
 }
 
-.dd-notes-bar {
+.sl-notes-bar {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
 
-.dd-notes-bar-label {
+.sl-notes-bar-label {
   color: var(--text-muted);
   margin-right: 4px;
 }
 
-.dd-btn.dd-slot {
+.sl-btn.sl-slot {
   height: auto;
   min-height: 28px;
   padding: 2px 10px;
@@ -631,18 +631,18 @@
   color: var(--text-muted);
 }
 
-.dd-btn.dd-slot:hover {
+.sl-btn.sl-slot:hover {
   border-style: solid;
   color: var(--text-normal);
   background: var(--background-modifier-hover);
 }
 
-/* Note sheets: callouts of type dd-*. A plain page with a notebook margin rule, wide enough that
+/* Note sheets: callouts of type sl-*. A plain page with a notebook margin rule, wide enough that
    text runs the full line, with some height even while empty so there is room to start writing.
    --callout-color is left alone: older Obsidian versions read it as an "r, g, b" triple and
    newer ones as a full color, so title and icon colors are set directly instead. */
 
-.callout[data-callout^='dd-'] {
+.callout[data-callout^='studiolo-'] {
   --callout-icon: lucide-pencil;
   --callout-padding: var(--size-4-3) var(--size-4-4) var(--size-4-4) calc(var(--size-4-4) + 12px);
   --callout-title-weight: var(--font-semibold);
@@ -654,7 +654,7 @@
   mix-blend-mode: normal;
 }
 
-.callout[data-callout^='dd-']::before {
+.callout[data-callout^='studiolo-']::before {
   content: '';
   position: absolute;
   inset-block: 0;
@@ -663,50 +663,50 @@
   background: rgba(var(--color-red-rgb), 0.5);
 }
 
-.callout[data-callout^='dd-'] .callout-title {
+.callout[data-callout^='studiolo-'] .callout-title {
   color: var(--text-normal);
 }
 
-.callout[data-callout^='dd-'] .callout-icon,
-.callout[data-callout^='dd-'] .callout-icon .svg-icon {
+.callout[data-callout^='studiolo-'] .callout-icon,
+.callout[data-callout^='studiolo-'] .callout-icon .svg-icon {
   color: var(--text-muted);
 }
 
-.callout[data-callout^='dd-'] .callout-content {
+.callout[data-callout^='studiolo-'] .callout-content {
   line-height: 1.6;
 }
 
-.callout[data-callout^='dd-'] .dd-callout-remove {
+.callout[data-callout^='studiolo-'] .sl-callout-remove {
   margin-left: auto;
   opacity: 0;
   transition: opacity 0.1s;
 }
 
-.callout[data-callout^='dd-']:hover .dd-callout-remove,
-.dd-callout-remove:focus-visible,
-.is-mobile .dd-callout-remove {
+.callout[data-callout^='studiolo-']:hover .sl-callout-remove,
+.sl-callout-remove:focus-visible,
+.is-mobile .sl-callout-remove {
   opacity: 1;
 }
 
-.callout[data-callout='dd-brainstorm'] {
+.callout[data-callout='studiolo-brainstorm'] {
   --callout-icon: lucide-lightbulb;
 }
 
-.callout[data-callout='dd-evening'] {
+.callout[data-callout='studiolo-evening'] {
   --callout-icon: lucide-sunset;
 }
 
-.callout[data-callout='dd-next'] {
+.callout[data-callout='studiolo-next'] {
   --callout-icon: lucide-forward;
 }
 
 /* Prompt */
 
-.dd-prompt-input {
+.sl-prompt-input {
   width: 100%;
 }
 
-.dd-prompt-buttons {
+.sl-prompt-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -717,32 +717,32 @@
    text wraps less. The container query looks at the board's own width, not the window's. */
 
 @container (max-width: 540px) {
-  .dd-lanes {
+  .sl-lanes {
     grid-template-columns: 1fr;
   }
 
-  .dd-lane {
+  .sl-lane {
     min-height: 0;
   }
 }
 
-.is-phone .dd-lanes {
+.is-phone .sl-lanes {
   grid-template-columns: 1fr;
 }
 
-.is-phone .dd-lane {
+.is-phone .sl-lane {
   min-height: 0;
 }
 
 @media (max-width: 600px) {
-  .dd-timer-time {
+  .sl-timer-time {
     font-size: 2.2em;
   }
 }
 
-.is-mobile .dd-btn.dd-small,
-.is-mobile .dd-btn.dd-slot,
-.is-mobile .dd-btn.dd-icon {
+.is-mobile .sl-btn.sl-small,
+.is-mobile .sl-btn.sl-slot,
+.is-mobile .sl-btn.sl-icon {
   min-height: 36px;
   min-width: 36px;
 }

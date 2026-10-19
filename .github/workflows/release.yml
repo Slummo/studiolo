@@ -1,0 +1,58 @@
+# Pushing a tag like 1.2.3 (no "v") tests the plugin and publishes a GitHub release with the three
+# files Obsidian installs. The tag must match the version in manifest.json and package.json.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write # create the release
+  id-token: write # sign the build attestation
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+
+      - name: Check the tag matches the version files
+        run: |
+          tag="$GITHUB_REF_NAME"
+          for f in manifest.json package.json; do
+            v=$(node -p "require('./$f').version")
+            if [ "$v" != "$tag" ]; then
+              echo "::error::$f says $v but the tag is $tag"
+              exit 1
+            fi
+          done
+          if [ "$(node -p "require('./versions.json')['$tag'] || ''")" = "" ]; then
+            echo "::error::versions.json has no entry for $tag"
+            exit 1
+          fi
+
+      # Shows on the release (and the Community directory scorecard) that these files were built
+      # from this repository by this workflow.
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" main.js manifest.json styles.css \
+            --verify-tag --title "$GITHUB_REF_NAME" --generate-notes

@@ -1,9 +1,9 @@
 {
-  "id": "daily-desk",
-  "name": "Daily Desk",
-  "version": "1.1.0",
+  "id": "studiolo",
+  "name": "Studiolo",
+  "version": "1.0.0",
   "minAppVersion": "1.5.0",
-  "description": "A daily page with a categorized drag-and-drop kanban, a pomodoro/countdown/stopwatch timer, left-behind tasks ranked by age, and notes carried over from previous days.",
-  "author": "Luca",
+  "description": "A daily page to organize your work or study: a pomodoro timer, a kanban board split by category, and notes, with unfinished tasks carried over from earlier days.",
+  "author": "Slummo",
   "isDesktopOnly": false
 }

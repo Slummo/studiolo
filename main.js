@@ -1,6 +1,6 @@
 'use strict';
 
-// Daily Desk: one Markdown note per day with a task board, a timer, unfinished tasks from
+// Studiolo: one Markdown note per day with a task board, a timer, unfinished tasks from
 // earlier days and notes left for later. All task data stays in the notes themselves.
 
 const obsidian = require('obsidian');
@@ -25,13 +25,13 @@ const moment = obsidian.moment;
 const DATE_FMT = 'YYYY-MM-DD';
 
 const BLOCK = {
-  nav: 'daily-desk-nav',
-  timer: 'daily-desk-timer',
-  board: 'daily-desk-board',
-  carryover: 'daily-desk-carryover',
-  previous: 'daily-desk-previous',
-  notes: 'daily-desk-notes',
-  catchup: 'daily-desk-catchup',
+  nav: 'studiolo-nav',
+  timer: 'studiolo-timer',
+  board: 'studiolo-board',
+  carryover: 'studiolo-carryover',
+  previous: 'studiolo-previous',
+  notes: 'studiolo-notes',
+  catchup: 'studiolo-catchup',
 };
 
 // `theme` is the color a lane uses until the user picks one in settings.
@@ -43,7 +43,7 @@ const LANES = [
 
 const NEXT_DAYS_RE = /notes for next days/i;
 const TODAY_NOTES_RE = /notes for today/i;
-const DRAG_MIME = 'application/x-daily-desk';
+const DRAG_MIME = 'application/x-studiolo';
 
 const DEFAULT_SETTINGS = {
   folder: 'Journal',
@@ -109,7 +109,7 @@ function cardKey(c) {
 }
 
 /**
- * Board format (inside the ```daily-desk-board block):
+ * Board format (inside the ```studiolo-board block):
  *
  *   ## Work
  *   - [ ] To do task
@@ -235,7 +235,7 @@ function headingAt(line) {
   return m ? { level: m[1].length, text: m[2] } : null;
 }
 
-/** "> [!dd-note] Notes for today" to { type, title }. */
+/** "> [!studiolo-note] Notes for today" to { type, title }. */
 function calloutAt(line) {
   const m = /^>\s*\[!([^\]\s]+)\][+-]?\s*(.*?)\s*$/.exec(line);
   return m ? { type: m[1].toLowerCase(), title: m[2] } : null;
@@ -331,14 +331,14 @@ function insertIntoSection(content, re, newLine) {
 
 /** Kinds of note section, in page order. Custom ones ('other') go before "Notes for next days". */
 const NOTE_KINDS = [
-  { id: 'brainstorm', title: 'Brainstorm', type: 'dd-brainstorm', re: /brainstorm/i },
-  { id: 'today', title: 'Notes for today', type: 'dd-note', re: TODAY_NOTES_RE },
-  { id: 'evening', title: 'End of day', type: 'dd-evening', re: /end of day|results of today|what i learned/i },
-  { id: 'next', title: 'Notes for next days', type: 'dd-next', re: NEXT_DAYS_RE },
+  { id: 'brainstorm', title: 'Brainstorm', type: 'studiolo-brainstorm', re: /brainstorm/i },
+  { id: 'today', title: 'Notes for today', type: 'studiolo-note', re: TODAY_NOTES_RE },
+  { id: 'evening', title: 'End of day', type: 'studiolo-evening', re: /end of day|results of today|what i learned/i },
+  { id: 'next', title: 'Notes for next days', type: 'studiolo-next', re: NEXT_DAYS_RE },
 ];
 const NOTE_ORDER = ['brainstorm', 'today', 'evening', 'other', 'next'];
 
-/** Note sections of a page, as { kind, start, end }. Old pages use headings, new ones callouts. */
+/** Note sections of a page, as { kind, start, end }: callouts, or headings on hand-made pages. */
 function noteSections(content) {
   const lines = String(content).split('\n');
   const mask = fenceMask(lines);
@@ -348,7 +348,7 @@ function noteSections(content) {
     if (!sec) continue;
     const kind = NOTE_KINDS.find((k) => k.re.test(sec.title));
     if (kind) out.push({ kind: kind.id, start: sec.start, end: sec.end });
-    else if (sec.type && sec.type.startsWith('dd-')) out.push({ kind: 'other', start: sec.start, end: sec.end });
+    else if (sec.type && sec.type.startsWith('studiolo-')) out.push({ kind: 'other', start: sec.start, end: sec.end });
   }
   return out;
 }
@@ -384,7 +384,7 @@ function addNoteSection(content, kindId, customTitle) {
   // Keep the file's final newline after the new callout.
   if (at === lines.length && lines[at - 1] === '') at -= 1;
 
-  const block = [`> [!${kind ? kind.type : 'dd-note'}] ${kind ? kind.title : customTitle}`, '> '];
+  const block = [`> [!${kind ? kind.type : 'studiolo-note'}] ${kind ? kind.title : customTitle}`, '> '];
   // Callouts need blank lines around them, or they merge with the neighbouring quote or paragraph.
   const before = at > 0 && lines[at - 1].trim() ? [''] : [];
   const after = at < lines.length && lines[at].trim() ? [''] : [];
@@ -424,10 +424,10 @@ function buildDailyNote(m) {
   const block = (name) => ['```' + name, '```'];
   return [
     '---',
-    `daily-desk: ${m.format(DATE_FMT)}`,
+    `studiolo: ${m.format(DATE_FMT)}`,
     // Lets styles.css separate the page's sections without touching other notes.
     'cssclasses:',
-    '  - dd-page',
+    '  - studiolo',
     '---',
     `# ${m.format('dddd D MMMM YYYY')}`,
     '',
@@ -495,10 +495,10 @@ function h(tag, cls, text) {
 
 /** `opts.title` becomes the aria-label, which Obsidian also shows as the tooltip. */
 function button(label, opts = {}) {
-  const b = h('button', ['dd-btn', opts.cls].filter(Boolean).join(' '));
+  const b = h('button', ['sl-btn', opts.cls].filter(Boolean).join(' '));
   b.type = 'button';
   if (opts.icon) {
-    const icon = h('span', 'dd-btn-icon');
+    const icon = h('span', 'sl-btn-icon');
     setIcon(icon, opts.icon);
     b.appendChild(icon);
   }
@@ -516,14 +516,14 @@ function button(label, opts = {}) {
 }
 
 function ageBadge(age, title) {
-  const b = h('span', `dd-age dd-urgency-${urgencyLevel(age)}`, `${age}d`);
+  const b = h('span', `sl-age sl-urgency-${urgencyLevel(age)}`, `${age}d`);
   if (title) b.title = title;
   return b;
 }
 
 // Timer
 
-class DeskTimer {
+class StudioloTimer {
   constructor(plugin, saved) {
     this.p = plugin;
     this.s = Object.assign(
@@ -740,11 +740,11 @@ class PromptModal extends Modal {
 
   onOpen() {
     this.titleEl.textContent = this.title;
-    const input = h('input', 'dd-prompt-input');
+    const input = h('input', 'sl-prompt-input');
     input.type = 'text';
     input.value = this.value;
     this.contentEl.appendChild(input);
-    const row = h('div', 'dd-prompt-buttons');
+    const row = h('div', 'sl-prompt-buttons');
     const cancel = h('button', '', 'Cancel');
     const ok = h('button', 'mod-cta', 'Save');
     row.append(cancel, ok);
@@ -787,7 +787,7 @@ class ConfirmModal extends Modal {
   onOpen() {
     this.titleEl.textContent = this.title;
     this.contentEl.appendChild(h('p', null, this.message));
-    const row = h('div', 'dd-prompt-buttons');
+    const row = h('div', 'sl-prompt-buttons');
     const cancel = h('button', '', 'Cancel');
     const ok = h('button', 'mod-warning', this.action);
     row.append(cancel, ok);
@@ -807,7 +807,7 @@ class ConfirmModal extends Modal {
 
 // Plugin
 
-class DailyDeskPlugin extends Plugin {
+class StudioloPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
     this.initState();
@@ -827,10 +827,10 @@ class DailyDeskPlugin extends Plugin {
     this.addCommand({ id: 'toggle-timer', name: 'Start / pause timer', callback: () => this.timer.toggle() });
     this.addCommand({ id: 'reset-timer', name: 'Reset timer', callback: () => this.timer.reset() });
     this.addCommand({ id: 'restart-cycle', name: 'Restart pomodoro cycle', callback: () => this.timer.restartCycle() });
-    this.addSettingTab(new DailyDeskSettingTab(this.app, this));
+    this.addSettingTab(new StudioloSettingTab(this.app, this));
 
     this.statusEl = this.addStatusBarItem();
-    this.statusEl.classList.add('dd-status');
+    this.statusEl.classList.add('sl-status');
     this.registerDomEvent(this.statusEl, 'click', () => this.timer.toggle());
 
     this.registerInterval(window.setInterval(() => this.onTick(), 500));
@@ -870,7 +870,7 @@ class DailyDeskPlugin extends Plugin {
     this.drag = null;
     this.refocus = null;
     this.currentDay = todayStr();
-    this.timer = new DeskTimer(this, this.timerState);
+    this.timer = new StudioloTimer(this, this.timerState);
   }
 
   async loadSettings() {
@@ -885,7 +885,7 @@ class DailyDeskPlugin extends Plugin {
     try {
       await this.saveData({ settings: this.settings, timer: this.timer ? this.timer.s : this.timerState });
     } catch (e) {
-      console.error('Daily Desk: could not save data', e);
+      console.error('Studiolo: could not save data', e);
     }
   }
 
@@ -1219,7 +1219,7 @@ class DailyDeskPlugin extends Plugin {
 
   laneColorProps() {
     const props = {};
-    for (const l of LANES) props[`--dd-${l.id}`] = this.settings.laneColors[l.id] || '';
+    for (const l of LANES) props[`--sl-${l.id}`] = this.settings.laneColors[l.id] || '';
     return props;
   }
 
@@ -1270,9 +1270,9 @@ class DailyDeskPlugin extends Plugin {
   }
 
   renderMd(text, el, sourcePath, comp) {
-    el.classList.add('dd-md');
+    el.classList.add('sl-md');
     MarkdownRenderer.render(this.app, text, el, sourcePath, comp).catch((e) => {
-      console.error('Daily Desk: could not render card text', e);
+      console.error('Studiolo: could not render card text', e);
       el.textContent = text;
     });
   }
@@ -1358,10 +1358,10 @@ class DailyDeskPlugin extends Plugin {
   renderNav(el, ctx) {
     const path = ctx.sourcePath;
     const date = this.dateOfPath(path);
-    const root = h('div', 'dd-nav');
+    const root = h('div', 'sl-nav');
     el.appendChild(root);
     if (!date) {
-      root.appendChild(h('span', 'dd-muted', 'Name this note by date, for example 2026-10-19, to use it as a daily page.'));
+      root.appendChild(h('span', 'sl-muted', 'Name this note by date, for example 2026-10-19, to use it as a daily page.'));
       return;
     }
     const comp = new MarkdownRenderChild(root);
@@ -1388,18 +1388,18 @@ class DailyDeskPlugin extends Plugin {
 
   drawNav(root, date, prev, next, isToday) {
     root.replaceChildren();
-    const row = h('div', 'dd-nav-row');
+    const row = h('div', 'sl-nav-row');
     row.appendChild(
       button(prev ? `← ${prev.d.format('ddd D MMM')}` : 'No earlier days', {
-        cls: 'dd-small',
+        cls: 'sl-small',
         disabled: !prev,
         onClick: () => prev && this.openFile(prev.f),
       })
     );
-    row.appendChild(button('Today', { cls: 'dd-small mod-cta', onClick: () => this.openToday() }));
+    row.appendChild(button('Today', { cls: 'sl-small mod-cta', onClick: () => this.openToday() }));
     row.appendChild(
       button(next ? `${next.d.format('ddd D MMM')} →` : 'No later days', {
-        cls: 'dd-small',
+        cls: 'sl-small',
         disabled: !next,
         onClick: () => next && this.openFile(next.f),
       })
@@ -1407,9 +1407,9 @@ class DailyDeskPlugin extends Plugin {
     root.appendChild(row);
 
     if (!isToday) {
-      const banner = h('div', 'dd-banner');
+      const banner = h('div', 'sl-banner');
       banner.appendChild(h('span', null, `You're looking at ${date.format('dddd D MMMM YYYY')}.`));
-      banner.appendChild(button('Go to today', { cls: 'dd-small', onClick: () => this.openToday() }));
+      banner.appendChild(button('Go to today', { cls: 'sl-small', onClick: () => this.openToday() }));
       root.appendChild(banner);
     }
   }
@@ -1418,35 +1418,35 @@ class DailyDeskPlugin extends Plugin {
 
   renderTimer(el, ctx) {
     const t = this.timer;
-    const root = h('div', 'dd-timer');
+    const root = h('div', 'sl-timer');
     el.appendChild(root);
     const comp = new MarkdownRenderChild(root);
     ctx.addChild(comp);
 
-    const tabs = h('div', 'dd-tabs');
+    const tabs = h('div', 'sl-tabs');
     const modes = [
       ['pomodoro', 'Pomodoro'],
       ['countdown', 'Timer'],
       ['stopwatch', 'Stopwatch'],
     ];
     const tabBtns = modes.map(([m, label]) => {
-      const b = button(label, { cls: 'dd-tab', onClick: () => t.setMode(m) });
+      const b = button(label, { cls: 'sl-tab', onClick: () => t.setMode(m) });
       tabs.appendChild(b);
       return [m, b];
     });
     root.appendChild(tabs);
 
-    const main = h('div', 'dd-timer-main');
-    const readout = h('div', 'dd-timer-readout');
-    const label = h('div', 'dd-timer-label');
-    const time = h('div', 'dd-timer-time');
+    const main = h('div', 'sl-timer-main');
+    const readout = h('div', 'sl-timer-readout');
+    const label = h('div', 'sl-timer-label');
+    const time = h('div', 'sl-timer-time');
     readout.append(label, time);
-    const controls = h('div', 'dd-timer-controls');
-    const startBtn = button(null, { cls: 'mod-cta dd-start', icon: 'play', title: 'Start', onClick: () => t.toggle() });
-    const resetBtn = button(null, { cls: 'dd-icon', icon: 'rotate-ccw', title: 'Reset', onClick: () => t.reset() });
-    const skipBtn = button(null, { cls: 'dd-icon', icon: 'skip-forward', title: 'Skip to the next phase', onClick: () => t.skip() });
+    const controls = h('div', 'sl-timer-controls');
+    const startBtn = button(null, { cls: 'mod-cta sl-start', icon: 'play', title: 'Start', onClick: () => t.toggle() });
+    const resetBtn = button(null, { cls: 'sl-icon', icon: 'rotate-ccw', title: 'Reset', onClick: () => t.reset() });
+    const skipBtn = button(null, { cls: 'sl-icon', icon: 'skip-forward', title: 'Skip to the next phase', onClick: () => t.skip() });
     const restartBtn = button(null, {
-      cls: 'dd-icon',
+      cls: 'sl-icon',
       icon: 'timer-reset',
       title: 'Restart the cycle from the first focus session',
       onClick: () => t.restartCycle(),
@@ -1455,13 +1455,13 @@ class DailyDeskPlugin extends Plugin {
     main.append(readout, controls);
     root.appendChild(main);
 
-    const bar = h('div', 'dd-progress');
-    const fill = h('div', 'dd-progress-fill');
+    const bar = h('div', 'sl-progress');
+    const fill = h('div', 'sl-progress-fill');
     bar.appendChild(fill);
     root.appendChild(bar);
 
-    const setter = h('div', 'dd-timer-setter');
-    const input = h('input', 'dd-minutes');
+    const setter = h('div', 'sl-timer-setter');
+    const input = h('input', 'sl-minutes');
     input.type = 'number';
     input.min = '1';
     input.max = '1440';
@@ -1473,13 +1473,13 @@ class DailyDeskPlugin extends Plugin {
         t.start();
       }
     });
-    setter.append(input, h('span', 'dd-muted', 'min'));
+    setter.append(input, h('span', 'sl-muted', 'min'));
     for (const p of [5, 10, 15, 25, 45, 60]) {
-      setter.appendChild(button(`${p}`, { cls: 'dd-chip', onClick: () => t.setCountdown(p) }));
+      setter.appendChild(button(`${p}`, { cls: 'sl-chip', onClick: () => t.setCountdown(p) }));
     }
     root.appendChild(setter);
 
-    const foot = h('div', 'dd-timer-foot dd-muted');
+    const foot = h('div', 'sl-timer-foot sl-muted');
     root.appendChild(foot);
 
     let shownIcon = 'play';
@@ -1500,12 +1500,12 @@ class DailyDeskPlugin extends Plugin {
         for (const [m, b] of tabBtns) b.classList.toggle('is-active', m === s.mode);
         label.textContent = t.phaseLabel();
         time.textContent = fmtDuration(t.displayMs(), s.mode !== 'stopwatch');
-        bar.classList.toggle('dd-hidden', s.mode === 'stopwatch');
-        fill.setCssProps({ '--dd-progress': `${Math.round(t.progress() * 1000) / 10}%` });
-        setter.classList.toggle('dd-hidden', s.mode !== 'countdown' || s.running);
+        bar.classList.toggle('sl-hidden', s.mode === 'stopwatch');
+        fill.setCssProps({ '--sl-progress': `${Math.round(t.progress() * 1000) / 10}%` });
+        setter.classList.toggle('sl-hidden', s.mode !== 'countdown' || s.running);
         if (input.ownerDocument.activeElement !== input) input.value = String(s.countdownMin);
-        skipBtn.classList.toggle('dd-hidden', s.mode !== 'pomodoro');
-        restartBtn.classList.toggle('dd-hidden', s.mode !== 'pomodoro');
+        skipBtn.classList.toggle('sl-hidden', s.mode !== 'pomodoro');
+        restartBtn.classList.toggle('sl-hidden', s.mode !== 'pomodoro');
         const n = t.todayCount();
         foot.textContent = n ? `${n} pomodoro${n === 1 ? '' : 's'} today` : '';
       },
@@ -1519,8 +1519,8 @@ class DailyDeskPlugin extends Plugin {
 
   renderBoard(source, el, ctx) {
     const path = ctx.sourcePath;
-    const planBar = h('div', 'dd-plan-bar');
-    const root = h('div', 'dd-board');
+    const planBar = h('div', 'sl-plan-bar');
+    const root = h('div', 'sl-board');
     root.setCssProps(this.laneColorProps());
     el.append(planBar, root);
     const comp = new MarkdownRenderChild(root);
@@ -1550,15 +1550,15 @@ class DailyDeskPlugin extends Plugin {
     const cats = visibleCategories(board, forced);
 
     if (!cats.length) {
-      const empty = h('div', 'dd-empty');
+      const empty = h('div', 'sl-empty');
       empty.appendChild(h('div', null, 'No tasks yet. Pick a category to start.'));
-      const row = h('div', 'dd-chip-row');
+      const row = h('div', 'sl-chip-row');
       for (const cat of this.settings.categories) {
-        row.appendChild(button(cat, { cls: 'dd-chip', onClick: () => this.addCategory(path, cat) }));
+        row.appendChild(button(cat, { cls: 'sl-chip', onClick: () => this.addCategory(path, cat) }));
       }
       row.appendChild(
         button('Other...', {
-          cls: 'dd-chip',
+          cls: 'sl-chip',
           onClick: () =>
             new PromptModal(this.app, 'New category', '', (name) => this.addCategory(path, name)).open(),
         })
@@ -1569,11 +1569,11 @@ class DailyDeskPlugin extends Plugin {
       for (const cat of cats) root.appendChild(this.renderCategory(board, cats, cat, path, noteDate, comp));
     }
 
-    const foot = h('div', 'dd-board-foot');
+    const foot = h('div', 'sl-board-foot');
     if (cats.length) {
       foot.appendChild(
         button('Add category', {
-          cls: 'dd-small',
+          cls: 'sl-small',
           onClick: (e) =>
             this.categoryPicker(
               e,
@@ -1584,13 +1584,13 @@ class DailyDeskPlugin extends Plugin {
       );
     }
     const archived = board.cards.filter((c) => laneOf(c.status) === 'archived').length;
-    if (archived) foot.appendChild(h('span', 'dd-muted', `${archived} archived`));
+    if (archived) foot.appendChild(h('span', 'sl-muted', `${archived} archived`));
     if (foot.childNodes.length) root.appendChild(foot);
 
     if (this.refocus && this.refocus.path === path) {
       const wanted = this.refocus.cat;
       this.refocus = null;
-      const inp = Array.from(root.querySelectorAll('input.dd-add')).find((i) => i.dataset.cat === wanted);
+      const inp = Array.from(root.querySelectorAll('input.sl-add')).find((i) => i.dataset.cat === wanted);
       if (inp) window.setTimeout(() => inp.focus(), 0);
     }
   }
@@ -1601,13 +1601,13 @@ class DailyDeskPlugin extends Plugin {
     const open = entries.filter((x) => isOpen(x.c.status)).length;
     const done = entries.filter((x) => laneOf(x.c.status) === 'done').length;
 
-    const row = h('div', 'dd-cat');
-    row.setCssProps({ '--dd-cat': catColor(cat) });
+    const row = h('div', 'sl-cat');
+    row.setCssProps({ '--sl-cat': catColor(cat) });
     if (this.collapsed.has(key)) row.classList.add('is-collapsed');
 
-    const head = h('div', 'dd-cat-head');
+    const head = h('div', 'sl-cat-head');
     const toggle = button(null, {
-      cls: 'dd-icon',
+      cls: 'sl-icon',
       title: 'Collapse or expand',
       icon: row.classList.contains('is-collapsed') ? 'chevron-right' : 'chevron-down',
       onClick: () => {
@@ -1617,12 +1617,12 @@ class DailyDeskPlugin extends Plugin {
         setIcon(toggle.firstChild, c ? 'chevron-right' : 'chevron-down');
       },
     });
-    head.append(toggle, h('span', 'dd-dot'), h('span', 'dd-cat-name', cat));
-    head.appendChild(h('span', 'dd-muted', `${open} open, ${done} done`));
-    head.appendChild(h('span', 'dd-spacer'));
+    head.append(toggle, h('span', 'sl-dot'), h('span', 'sl-cat-name', cat));
+    head.appendChild(h('span', 'sl-muted', `${open} open, ${done} done`));
+    head.appendChild(h('span', 'sl-spacer'));
     head.appendChild(
       button(null, {
-        cls: 'dd-icon',
+        cls: 'sl-icon',
         icon: 'more-horizontal',
         title: 'Category actions',
         onClick: (e) => this.categoryMenu(e, path, cat, entries, !!board.extra[cat]),
@@ -1630,7 +1630,7 @@ class DailyDeskPlugin extends Plugin {
     );
     row.appendChild(head);
 
-    const lanes = h('div', 'dd-lanes');
+    const lanes = h('div', 'sl-lanes');
     for (const lane of LANES) {
       const inLane = entries.filter((x) => laneOf(x.c.status) === lane.id);
       lanes.appendChild(this.renderLane(lane, cat, cats, inLane, path, noteDate, comp));
@@ -1640,16 +1640,16 @@ class DailyDeskPlugin extends Plugin {
   }
 
   renderLane(lane, cat, cats, entries, path, noteDate, comp) {
-    const laneEl = h('div', `dd-lane dd-lane-${lane.id}`);
-    const head = h('div', 'dd-lane-head', lane.label);
-    if (entries.length) head.appendChild(h('span', 'dd-lane-count', String(entries.length)));
+    const laneEl = h('div', `sl-lane sl-lane-${lane.id}`);
+    const head = h('div', 'sl-lane-head', lane.label);
+    if (entries.length) head.appendChild(h('span', 'sl-lane-count', String(entries.length)));
     laneEl.appendChild(head);
-    const list = h('div', 'dd-lane-list');
+    const list = h('div', 'sl-lane-list');
     for (const { c, i } of entries) list.appendChild(this.renderCard(c, i, cats, path, noteDate, comp));
     laneEl.appendChild(list);
 
     if (lane.id === 'todo') {
-      const inp = h('input', 'dd-add');
+      const inp = h('input', 'sl-add');
       inp.type = 'text';
       inp.placeholder = 'Add a task';
       inp.dataset.cat = cat;
@@ -1666,17 +1666,17 @@ class DailyDeskPlugin extends Plugin {
     }
 
     const clearMarks = () => {
-      laneEl.classList.remove('dd-over');
-      laneEl.querySelectorAll('.dd-drop-before').forEach((n) => n.classList.remove('dd-drop-before'));
+      laneEl.classList.remove('sl-over');
+      laneEl.querySelectorAll('.sl-drop-before').forEach((n) => n.classList.remove('sl-drop-before'));
     };
     laneEl.addEventListener('dragover', (e) => {
       if (!this.drag || this.drag.path !== path) return;
       e.preventDefault();
       if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-      laneEl.classList.add('dd-over');
-      laneEl.querySelectorAll('.dd-drop-before').forEach((n) => n.classList.remove('dd-drop-before'));
-      const target = e.target && e.target.closest ? e.target.closest('.dd-card') : null;
-      if (target && laneEl.contains(target)) target.classList.add('dd-drop-before');
+      laneEl.classList.add('sl-over');
+      laneEl.querySelectorAll('.sl-drop-before').forEach((n) => n.classList.remove('sl-drop-before'));
+      const target = e.target && e.target.closest ? e.target.closest('.sl-card') : null;
+      if (target && laneEl.contains(target)) target.classList.add('sl-drop-before');
     });
     laneEl.addEventListener('dragleave', (e) => {
       if (!e.relatedTarget || !laneEl.contains(e.relatedTarget)) clearMarks();
@@ -1686,7 +1686,7 @@ class DailyDeskPlugin extends Plugin {
       e.preventDefault();
       e.stopPropagation();
       clearMarks();
-      const target = e.target && e.target.closest ? e.target.closest('.dd-card') : null;
+      const target = e.target && e.target.closest ? e.target.closest('.sl-card') : null;
       const before = target && laneEl.contains(target) ? Number(target.dataset.idx) : null;
       const { idx, key } = this.drag;
       this.drag = null;
@@ -1698,11 +1698,11 @@ class DailyDeskPlugin extends Plugin {
   renderCard(c, i, cats, path, noteDate, comp) {
     const lane = laneOf(c.status);
     const key = cardKey(c);
-    const card = h('div', `dd-card dd-card-${lane}`);
+    const card = h('div', `sl-card sl-card-${lane}`);
     card.dataset.idx = String(i);
     card.draggable = true;
 
-    const cb = h('input', 'dd-check');
+    const cb = h('input', 'sl-check');
     cb.type = 'checkbox';
     cb.checked = lane === 'done';
     cb.title = lane === 'done' ? 'Mark as not done' : 'Mark as done';
@@ -1712,7 +1712,7 @@ class DailyDeskPlugin extends Plugin {
     );
     card.appendChild(cb);
 
-    const text = h('div', 'dd-card-text');
+    const text = h('div', 'sl-card-text');
     this.renderMd(c.text, text, path, comp);
     card.appendChild(text);
 
@@ -1723,7 +1723,7 @@ class DailyDeskPlugin extends Plugin {
 
     card.appendChild(
       button(null, {
-        cls: 'dd-icon dd-card-more',
+        cls: 'sl-icon sl-card-more',
         icon: 'more-horizontal',
         title: 'Task actions',
         onClick: (e) => this.cardMenu(e, path, i, c, cats),
@@ -1872,10 +1872,10 @@ class DailyDeskPlugin extends Plugin {
 
   renderNotesBar(el, ctx) {
     const path = ctx.sourcePath;
-    const root = h('div', 'dd-notes-bar');
+    const root = h('div', 'sl-notes-bar');
     el.appendChild(root);
     if (!this.dateOfPath(path)) {
-      root.appendChild(h('span', 'dd-muted', 'This block only works in a daily page named by date, for example 2026-10-19.'));
+      root.appendChild(h('span', 'sl-muted', 'This block only works in a daily page named by date, for example 2026-10-19.'));
       return;
     }
     const comp = new MarkdownRenderChild(root);
@@ -1885,15 +1885,15 @@ class DailyDeskPlugin extends Plugin {
 
   drawNotesBar(root, path, missing) {
     root.replaceChildren();
-    root.appendChild(h('span', 'dd-notes-bar-label', 'Add a note'));
+    root.appendChild(h('span', 'sl-notes-bar-label', 'Add a note'));
     const icons = { today: 'pencil', evening: 'sunset', next: 'forward' };
     for (const k of missing) {
       if (k.id === 'brainstorm') continue;
-      root.appendChild(button(k.title, { cls: 'dd-slot', icon: icons[k.id], onClick: () => this.addNote(path, k.id) }));
+      root.appendChild(button(k.title, { cls: 'sl-slot', icon: icons[k.id], onClick: () => this.addNote(path, k.id) }));
     }
     root.appendChild(
       button('Other...', {
-        cls: 'dd-slot',
+        cls: 'sl-slot',
         icon: 'plus',
         onClick: () => new PromptModal(this.app, 'Note title', '', (title) => this.addNote(path, 'other', title)).open(),
       })
@@ -1905,7 +1905,7 @@ class DailyDeskPlugin extends Plugin {
     if (!missing.some((k) => k.id === 'brainstorm')) return;
     root.appendChild(
       button('Brainstorm first', {
-        cls: 'dd-slot',
+        cls: 'sl-slot',
         icon: 'lightbulb',
         title: 'Add a brainstorm section here, above the tasks',
         onClick: () => this.addNote(path, 'brainstorm'),
@@ -1913,7 +1913,7 @@ class DailyDeskPlugin extends Plugin {
     );
   }
 
-  // removing note sections: an X in the title of every Daily Desk callout
+  // removing note sections: an X in the title of every Studiolo callout
 
   decorateCallouts(el, ctx) {
     if (!this.isJournalPath(ctx.sourcePath)) return;
@@ -1922,11 +1922,11 @@ class DailyDeskPlugin extends Plugin {
       const type = co.getAttribute('data-callout') || '';
       const title = co.querySelector('.callout-title');
       const inner = co.querySelector('.callout-title-inner');
-      if (!type.startsWith('dd-') || !title || !inner || title.querySelector('.dd-callout-remove')) continue;
+      if (!type.startsWith('studiolo-') || !title || !inner || title.querySelector('.sl-callout-remove')) continue;
       const text = inner.textContent.trim();
       const x = button(null, {
         // interactive-child keeps Live Preview from moving the cursor into the callout on click.
-        cls: 'dd-icon dd-callout-remove interactive-child',
+        cls: 'sl-icon sl-callout-remove interactive-child',
         icon: 'x',
         title: `Remove "${text}"`,
         onClick: () => this.removeNote(ctx.sourcePath, type, text),
@@ -1972,13 +1972,13 @@ class DailyDeskPlugin extends Plugin {
 
   /** One section with its own title holding both lists; hidden entirely while both are empty. */
   renderCatchup(el, ctx) {
-    const section = h('div', 'dd-section dd-catchup');
-    section.appendChild(h('div', 'dd-section-title', 'Catch up'));
+    const section = h('div', 'sl-section sl-catchup');
+    section.appendChild(h('div', 'sl-section-title', 'Catch up'));
     el.appendChild(section);
     const empty = {};
     const onDraw = (kind, n) => {
       empty[kind] = n === 0;
-      section.classList.toggle('dd-hidden', empty.carryover !== false && empty.previous !== false);
+      section.classList.toggle('sl-hidden', empty.carryover !== false && empty.previous !== false);
     };
     this.renderLive(section, ctx, 'carryover', onDraw);
     this.renderLive(section, ctx, 'previous', onDraw);
@@ -1988,13 +1988,13 @@ class DailyDeskPlugin extends Plugin {
   renderLive(el, ctx, kind, onDraw) {
     const path = ctx.sourcePath;
     const date = this.dateOfPath(path);
-    const root = h('div', `dd-live dd-${kind}`);
+    const root = h('div', `sl-live sl-${kind}`);
     el.appendChild(root);
     const comp = new MarkdownRenderChild(root);
     ctx.addChild(comp);
     this.wireLinks(root, path);
     if (!date) {
-      root.appendChild(h('div', 'dd-muted', 'This block only works in a daily page named by date, for example 2026-10-19.'));
+      root.appendChild(h('div', 'sl-muted', 'This block only works in a daily page named by date, for example 2026-10-19.'));
       return;
     }
     const view = {
@@ -2045,20 +2045,20 @@ class DailyDeskPlugin extends Plugin {
   drawCarryover(root, items, path, date, view) {
     root.replaceChildren();
     if (!items.length) {
-      root.appendChild(h('div', 'dd-empty dd-ok', 'Nothing left behind.'));
+      root.appendChild(h('div', 'sl-empty sl-ok', 'Nothing left behind.'));
       return;
     }
     const isToday = date.isSame(moment(), 'day');
     const here = isToday ? 'today' : 'this day';
 
-    const head = h('div', 'dd-live-head');
+    const head = h('div', 'sl-live-head');
     head.appendChild(
-      h('span', 'dd-muted', `${items.length} unfinished task${items.length === 1 ? '' : 's'} from previous days, oldest first`)
+      h('span', 'sl-muted', `${items.length} unfinished task${items.length === 1 ? '' : 's'} from previous days, oldest first`)
     );
-    head.appendChild(h('span', 'dd-spacer'));
+    head.appendChild(h('span', 'sl-spacer'));
     head.appendChild(
       button(`Move all to ${here}`, {
-        cls: 'dd-small mod-cta',
+        cls: 'sl-small mod-cta',
         onClick: () =>
           this.runLive(view, async () => {
             for (const it of items) await this.carryTo(path, it);
@@ -2077,22 +2077,22 @@ class DailyDeskPlugin extends Plugin {
     );
 
     for (const [cat, list] of sorted) {
-      const g = h('div', 'dd-group');
-      g.setCssProps({ '--dd-cat': catColor(cat) });
-      const gh = h('div', 'dd-group-head');
-      gh.append(h('span', 'dd-dot'), h('span', 'dd-cat-name', cat), h('span', 'dd-muted', String(list.length)));
+      const g = h('div', 'sl-group');
+      g.setCssProps({ '--sl-cat': catColor(cat) });
+      const gh = h('div', 'sl-group-head');
+      gh.append(h('span', 'sl-dot'), h('span', 'sl-cat-name', cat), h('span', 'sl-muted', String(list.length)));
       g.appendChild(gh);
 
       list.sort((a, b) => b.age - a.age);
       for (const it of list) {
-        const row = h('div', `dd-item dd-urgency-row-${urgencyLevel(it.age)}`);
+        const row = h('div', `sl-item sl-urgency-row-${urgencyLevel(it.age)}`);
         row.appendChild(ageBadge(it.age, `Open since ${it.origin}`));
-        const t = h('div', 'dd-item-text');
+        const t = h('div', 'sl-item-text');
         this.renderMd(it.card.text, t, path, view.dc);
-        if (laneOf(it.card.status) === 'doing') t.prepend(h('span', 'dd-tag', 'doing'));
+        if (laneOf(it.card.status) === 'doing') t.prepend(h('span', 'sl-tag', 'doing'));
         row.appendChild(t);
 
-        const src = h('a', 'dd-src', it.date.format('ddd D MMM'));
+        const src = h('a', 'sl-src', it.date.format('ddd D MMM'));
         src.href = '#';
         src.title = 'Open that day';
         src.addEventListener('click', (e) => {
@@ -2101,20 +2101,20 @@ class DailyDeskPlugin extends Plugin {
         });
         row.appendChild(src);
 
-        const acts = h('div', 'dd-actions');
+        const acts = h('div', 'sl-actions');
         acts.append(
           button(isToday ? 'Move to today' : 'Move here', {
-            cls: 'dd-small',
+            cls: 'sl-small',
             title: `Move it to ${here}'s board`,
             onClick: () => this.runLive(view, () => this.carryTo(path, it)),
           }),
           button('Done', {
-            cls: 'dd-small',
+            cls: 'sl-small',
             title: 'It was done that day',
             onClick: () => this.runLive(view, () => this.setCardStatus(it.path, it.idx, it.key, 'x')),
           }),
           button('Archive', {
-            cls: 'dd-small',
+            cls: 'sl-small',
             title: 'Stop tracking it. It stays in the old page as archived.',
             onClick: () => this.runLive(view, () => this.setCardStatus(it.path, it.idx, it.key, '-')),
           })
@@ -2129,17 +2129,17 @@ class DailyDeskPlugin extends Plugin {
   drawPrevious(root, items, path, date, view) {
     root.replaceChildren();
     if (!items.length) {
-      root.appendChild(h('div', 'dd-empty dd-ok', 'Nothing pending from previous days.'));
+      root.appendChild(h('div', 'sl-empty sl-ok', 'Nothing pending from previous days.'));
       return;
     }
-    const head = h('div', 'dd-live-head');
+    const head = h('div', 'sl-live-head');
     head.appendChild(
-      h('span', 'dd-muted', `${items.length} note${items.length === 1 ? '' : 's'} you left for the next days`)
+      h('span', 'sl-muted', `${items.length} note${items.length === 1 ? '' : 's'} you left for the next days`)
     );
-    head.appendChild(h('span', 'dd-spacer'));
+    head.appendChild(h('span', 'sl-spacer'));
     head.appendChild(
       button('Mark all as read', {
-        cls: 'dd-small',
+        cls: 'sl-small',
         onClick: () =>
           this.runLive(view, async () => {
             for (const it of items) await this.resolvePending(it);
@@ -2154,9 +2154,9 @@ class DailyDeskPlugin extends Plugin {
       groups.get(it.path).push(it);
     }
     for (const [p, list] of groups) {
-      const g = h('div', 'dd-group');
-      const gh = h('div', 'dd-group-head');
-      const link = h('a', 'dd-src', list[0].date.format('dddd D MMMM'));
+      const g = h('div', 'sl-group');
+      const gh = h('div', 'sl-group-head');
+      const link = h('a', 'sl-src', list[0].date.format('dddd D MMMM'));
       link.href = '#';
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -2166,19 +2166,19 @@ class DailyDeskPlugin extends Plugin {
       g.appendChild(gh);
 
       for (const it of list) {
-        const row = h('div', 'dd-item');
-        const t = h('div', 'dd-item-text');
+        const row = h('div', 'sl-item');
+        const t = h('div', 'sl-item-text');
         this.renderMd(it.text, t, path, view.dc);
         row.appendChild(t);
-        const acts = h('div', 'dd-actions');
+        const acts = h('div', 'sl-actions');
         acts.append(
           button('Add to notes', {
-            cls: 'dd-small',
+            cls: 'sl-small',
             title: 'Copy it into "Notes for today"',
             onClick: () => this.runLive(view, () => this.pendingToNotes(path, it)),
           }),
           button('Make task', {
-            cls: 'dd-small',
+            cls: 'sl-small',
             title: 'Turn it into a task on the board',
             onClick: async (e) => {
               const opts = await this.boardCategories(path);
@@ -2186,7 +2186,7 @@ class DailyDeskPlugin extends Plugin {
             },
           }),
           button('Dismiss', {
-            cls: 'dd-small',
+            cls: 'sl-small',
             title: 'Mark it as read and hide it',
             onClick: () => this.runLive(view, () => this.resolvePending(it)),
           })
@@ -2201,7 +2201,7 @@ class DailyDeskPlugin extends Plugin {
 
 // Settings
 
-class DailyDeskSettingTab extends PluginSettingTab {
+class StudioloSettingTab extends PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -2233,7 +2233,7 @@ class DailyDeskSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Custom template (optional)')
       .setDesc(
-        'Path to a note used for new daily pages. {{date}} and {{title}} are replaced. Keep the daily-desk code blocks; note sections are added from the page as you need them.'
+        'Path to a note used for new daily pages. {{date}} and {{title}} are replaced. Keep the studiolo code blocks; note sections are added from the page as you need them.'
       )
       .addText((t) =>
         t.setPlaceholder('Templates/daily').setValue(p.settings.templatePath).onChange(async (v) => {
@@ -2356,8 +2356,8 @@ class DailyDeskSettingTab extends PluginSettingTab {
   }
 }
 
-module.exports = DailyDeskPlugin;
-module.exports.default = DailyDeskPlugin;
+module.exports = StudioloPlugin;
+module.exports.default = StudioloPlugin;
 module.exports._test = {
   laneOf,
   laneChar,
@@ -2379,7 +2379,7 @@ module.exports._test = {
   cssColorToHex,
   buildDailyNote,
   fmtDuration,
-  DeskTimer,
+  StudioloTimer,
   DEFAULT_SETTINGS,
   BLOCK,
 };

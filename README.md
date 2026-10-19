@@ -1,6 +1,8 @@
-# Daily Desk
+# Studiolo
 
-Daily Desk turns each daily note into a working page, laid out in the order a day goes:
+A studiolo was the small private study of Renaissance palaces, a room kept for focused work. This
+plugin gives you one for each day: it turns your daily note into the page where you organize the
+day's work or study, laid out in the order a day goes:
 
 - a timer at the top (pomodoro, countdown or stopwatch)
 - under Catch up, the tasks you left unfinished on earlier days, oldest first, and the notes you
@@ -18,9 +20,9 @@ Obsidian Sync and any script that can append a line to a file.
 Until the plugin is in the Community directory, install it by hand:
 
 1. In your vault, open the hidden `.obsidian/plugins/` folder (create `plugins` if it isn't there).
-2. Create a `daily-desk` folder inside it and copy `main.js`, `manifest.json` and `styles.css` into it.
+2. Create a `studiolo` folder inside it and copy `main.js`, `manifest.json` and `styles.css` into it.
 3. In Obsidian, go to Settings > Community plugins, turn off Restricted mode if needed, click the
-   refresh icon next to "Installed plugins" and enable Daily Desk.
+   refresh icon next to "Installed plugins" and enable Studiolo.
 
 Today's page opens right away, in a folder called `Journal`.
 
@@ -42,7 +44,7 @@ with a link back to today.
 ## The task board
 
 On a new page, pick a category to start (or "Other..." for a new one). Only the categories you use
-that day are shown. Each lane has its own color; change them under Settings > Daily Desk > Board.
+that day are shown. Each lane has its own color; change them under Settings > Studiolo > Board.
 On a phone, or when the note is in a narrow pane, the three lanes stack on top of each other.
 
 Type in "Add a task" and press Enter to add a card. The box keeps focus, so you can add several in a
@@ -53,9 +55,9 @@ can rename it, archive its done tasks, or remove it when it's empty.
 
 Links and tags work inside cards: `Read [[Paper X]] #reading`.
 
-## Left behind
+## Catch up: unfinished tasks
 
-Any task still in To do or Doing on an earlier page shows up here, grouped by category. The badge is
+Any task still in To do or Doing on an earlier page shows up under Catch up, grouped by category. The badge is
 its age in days: yellow for 1 day, orange for 2 or 3, red for 4 to 6, solid red after a week.
 
 - Move to today puts it on today's board. It keeps its original date, written as
@@ -65,7 +67,7 @@ its age in days: yellow for 1 day, orange for 2 or 3, red for 4 to 6, solid red 
 
 "Move all to today" moves every task in the list.
 
-## From previous days
+## Catch up: notes from earlier days
 
 Anything you write as a bullet under "Notes for next days" shows up on every later page until you
 deal with it, even if you skip a few days. You can add it to today's "Notes for today", turn it into
@@ -124,16 +126,16 @@ hotkeys.
 | Sound, system notification               | on, on                          |
 
 To use your own template, create a note, put its path in settings, and use `{{date}}` and
-`{{title}}` where you want the date. Keep the code blocks (`daily-desk-nav`, `daily-desk-timer`,
-`daily-desk-carryover`, `daily-desk-previous`, `daily-desk-board` and `daily-desk-notes`). A freshly
-created page is a good starting point.
+`{{title}}` where you want the date. Keep the code blocks (`studiolo-nav`, `studiolo-timer`,
+`studiolo-catchup`, `studiolo-board` and `studiolo-notes`). A freshly created page is a good
+starting point.
 
 ## How it's stored
 
 A daily page is a file like `Journal/2026-10-19.md`. The board is the content of its code block:
 
 ````markdown
-```daily-desk-board
+```studiolo-board
 ## Work
 - [ ] Fix login bug
 - [/] Write report
@@ -152,11 +154,11 @@ the block by hand in Source mode, and other tools can write to it. A Telegram bo
 Note sections are callouts:
 
 ```markdown
-> [!dd-next] Notes for next days
+> [!studiolo-next] Notes for next days
 > - Ask about the deadline
 ```
 
-Pages made by Daily Desk 1.0, with a `## Notes for next days` heading instead, keep working.
+A plain `## Notes for next days` heading works too, if your template uses headings instead.
 
 ## Tips
 
