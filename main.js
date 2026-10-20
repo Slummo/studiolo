@@ -15,6 +15,7 @@ const {
   MarkdownRenderer,
   MarkdownView,
   TFile,
+  TFolder,
   normalizePath,
   setIcon,
 } = obsidian;
@@ -925,13 +926,19 @@ class StudioloPlugin extends Plugin {
     return f instanceof TFile ? f : null;
   }
 
-  /** All daily notes, oldest first. */
+  /** All daily notes, oldest first. Only the journal folder is walked, not the whole vault. */
   dailyNotes() {
-    return this.app.vault
-      .getMarkdownFiles()
-      .filter((f) => this.isJournalPath(f.path))
-      .map((f) => ({ f, d: this.dateOfPath(f.path) }))
-      .sort((a, b) => a.d.valueOf() - b.d.valueOf());
+    const f = this.folder();
+    const root = f ? this.app.vault.getAbstractFileByPath(f) : this.app.vault.getRoot();
+    const out = [];
+    const walk = (folder) => {
+      for (const c of folder.children) {
+        if (c instanceof TFolder) walk(c);
+        else if (c instanceof TFile && this.isJournalPath(c.path)) out.push({ f: c, d: this.dateOfPath(c.path) });
+      }
+    };
+    if (root instanceof TFolder) walk(root);
+    return out.sort((a, b) => a.d.valueOf() - b.d.valueOf());
   }
 
   async ensureFolder() {

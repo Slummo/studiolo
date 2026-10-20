@@ -1,10 +1,11 @@
 {
   "name": "studiolo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Obsidian plugin: a daily page with a pomodoro timer, a kanban board and notes.",
   "main": "main.js",
   "scripts": {
+    "build": "node --check main.js",
     "test": "node test/run.js",
     "check": "node --check main.js"
   },

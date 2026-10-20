@@ -24,6 +24,21 @@ class Component {
 }
 class MarkdownRenderChild extends Component { constructor(el) { super(); this.containerEl = el; } }
 class TFile { constructor(path) { this.path = path; this.basename = path.split('/').pop().replace(/\.md$/, ''); this.extension = 'md'; } }
+// Children are worked out from the fake vault's file and folder lists each time they are read.
+class TFolder {
+  constructor(vault, path) { this.vault = vault; this.path = path; }
+  get children() {
+    const pre = this.path ? `${this.path}/` : '';
+    const out = new Map();
+    for (const p of [...this.vault.folders, ...this.vault.tfiles.keys()]) {
+      if (!p.startsWith(pre) || p === this.path) continue;
+      const name = p.slice(pre.length).split('/')[0];
+      const child = pre + name;
+      if (!out.has(child)) out.set(child, this.vault.tfiles.get(child) || new TFolder(this.vault, child));
+    }
+    return [...out.values()];
+  }
+}
 const notices = [];
 let lastMenu = null;
 class Menu {
@@ -44,6 +59,7 @@ const mock = {
   MarkdownView: class {},
   MarkdownRenderer: { render: (app, md, el) => { const p = document.createElement('p'); p.textContent = md; el.appendChild(p); return Promise.resolve(); } },
   TFile,
+  TFolder,
   normalizePath: (p) => p.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/^\/|\/$/g, '') || '/',
   setIcon: (el, icon) => { el.dataset.icon = icon; },
   moment,
@@ -58,9 +74,14 @@ const T = Plugin._test;
 function makeApp() {
   const files = new Map();
   const tfiles = new Map();
+  const folders = new Set();
   const vault = {
     files,
-    getAbstractFileByPath: (p) => tfiles.get(p) || (folders.has(p) ? { path: p } : null),
+    tfiles,
+    folders,
+    getAbstractFileByPath: (p) => tfiles.get(p)
+      || (folders.has(p) || [...tfiles.keys()].some((k) => k.startsWith(`${p}/`)) ? new TFolder(vault, p) : null),
+    getRoot: () => new TFolder(vault, ''),
     getMarkdownFiles: () => [...tfiles.values()],
     cachedRead: async (f) => files.get(f.path),
     read: async (f) => files.get(f.path),
@@ -69,7 +90,6 @@ function makeApp() {
     createFolder: async (p) => { folders.add(p); },
     on: () => ({}),
   };
-  const folders = new Set();
   const opened = [];
   const workspace = {
     getActiveViewOfType: () => null,

@@ -1,7 +1,7 @@
 {
   "id": "studiolo",
   "name": "Studiolo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.5.0",
   "description": "A daily page to organize your work or study: a pomodoro timer, a kanban board split by category, and notes, with unfinished tasks carried over from earlier days.",
   "author": "Slummo",
