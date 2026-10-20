@@ -1,14 +1,14 @@
 {
   "name": "studiolo",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Obsidian plugin: a daily page with a pomodoro timer, a kanban board and notes.",
-  "main": "src/main.js",
+  "main": "src/plugin.js",
   "scripts": {
-    "build": "node --check src/main.js && node -e \"require('fs').copyFileSync('src/main.js', 'main.js')\"",
+    "build": "node scripts/build.js",
     "pretest": "npm run build",
     "test": "node test/run.js",
-    "check": "node --check src/main.js"
+    "check": "node --check src/plugin.js"
   },
   "devDependencies": {
     "jsdom": "^24.0.0",
