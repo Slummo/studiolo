@@ -23,7 +23,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run check
+      - run: npm run build # makes main.js from src/main.js
       - run: npm test
 
       - name: Check the tag matches the version files
